@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quizzes &amp; Tasks · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--hairline); }
+  .tab-btn { padding: 10px 4px; margin-right: 22px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--slate); border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--ink); border-color: var(--brass); }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div></div>
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+    <div class="nav-group-label">Academics</div>
+    <a class="nav-link" href="students.html">Students</a>
+    <a class="nav-link" href="courses.html">Courses</a>
+    <a class="nav-link" href="attendance.html">Attendance</a>
+    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
+    <a class="nav-link" href="assignments.html">Assignments</a>
+    <a class="nav-link" href="presentations.html">Presentations</a>
+    <a class="nav-link active" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
+    <div class="nav-group-label">Communication</div>
+    <a class="nav-link" href="announcements.html">Announcements</a>
+    <a class="nav-link" href="course-content.html">Course Content</a>
+    <div class="nav-group-label">System</div>
+    <a class="nav-link" href="reports.html">Reports</a>
+    <a class="nav-link" href="backup.html">Backup</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Quizzes &amp; Tasks</h1><div class="today" id="item-count">—</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-quiz">Quizzes</button>
+      <button class="tab-btn" id="tab-task">Classroom Tasks</button>
+    </div>
+
+    <div class="toolbar">
+      <select id="filter-course" style="max-width:260px;padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;">
+        <option value="">All courses</option>
+      </select>
+      <div class="toolbar-actions">
+        <button class="btn btn-primary-sm" id="btn-add">+ New Quiz</button>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <table class="data-table">
+        <thead id="table-head">
+          <tr><th>Title</th><th>Course</th><th>Date</th><th>Total Marks</th><th>Assigned To</th><th></th></tr>
+        </thead>
+        <tbody id="table-body"><tr><td colspan="6"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h2 id="modal-title">New Quiz</h2>
+    <form id="item-form">
+      <input type="hidden" id="original-id">
+      <div class="form-grid">
+        <div class="field full"><label id="title-label">Quiz Title *</label><input type="text" id="f-title" required></div>
+        <div class="field"><label>Course *</label><select id="f-course" required></select></div>
+        <div class="field"><label id="date-label">Date *</label><input type="date" id="f-due" required></div>
+        <div class="field" id="total-field"><label>Total Marks *</label><input type="number" id="f-total" min="0"></div>
+        <div class="field full" id="desc-field" style="display:none;"><label>Description</label><input type="text" id="f-desc"></div>
+        <div class="field full">
+          <label>Assign To</label>
+          <div class="radio-row">
+            <label><input type="radio" name="assign-mode" value="all" checked> Entire class</label>
+            <label><input type="radio" name="assign-mode" value="selected"> Selected students</label>
+          </div>
+          <div class="assignee-picker" id="assignee-picker" style="display:none;"></div>
+        </div>
+      </div>
+      <div class="form-msg" id="form-msg"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="btn-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary-sm" id="btn-save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Marks Grid Modal -->
+<div class="modal-backdrop" id="marks-backdrop">
+  <div class="modal" style="max-width:640px;">
+    <h2 id="marks-title">Enter Marks</h2>
+    <div style="display:flex; gap:10px; margin-bottom:14px;">
+      <button type="button" class="btn btn-outline" id="btn-marks-template" style="font-size:12px;">Download Template</button>
+      <button type="button" class="btn btn-outline" id="btn-marks-import" style="font-size:12px;">Upload Filled Marks</button>
+      <input type="file" id="marks-import-file" accept=".xlsx,.xls" style="display:none;">
+    </div>
+    <div class="table-panel" style="box-shadow:none;border:1px solid var(--hairline);margin-bottom:14px;">
+      <table class="data-table">
+        <thead><tr><th>Roll No.</th><th>Name</th><th>Marks</th><th>Remarks</th></tr></thead>
+        <tbody id="marks-body"></tbody>
+      </table>
+    </div>
+    <div class="form-msg" id="marks-msg"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-outline" id="btn-marks-cancel">Close</button>
+      <button type="button" class="btn btn-primary-sm" id="btn-marks-save">Save Marks</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/gradebook-common.js"></script>
+<script src="js/quizzes-tasks.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

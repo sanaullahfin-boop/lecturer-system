@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .report-card { background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-card); padding: 20px; }
+  .report-card h3 { font-size: 15px; margin-bottom: 6px; border: none; padding: 0; }
+  .report-card p { font-size: 12.5px; color: var(--slate); margin: 0 0 14px; line-height: 1.5; }
+  .report-card select { width: 100%; padding: 8px 10px; border: 1px solid var(--hairline); border-radius: 7px; font-size: 13px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div></div>
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+    <div class="nav-group-label">Academics</div>
+    <a class="nav-link" href="students.html">Students</a>
+    <a class="nav-link" href="courses.html">Courses</a>
+    <a class="nav-link" href="attendance.html">Attendance</a>
+    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
+    <a class="nav-link" href="assignments.html">Assignments</a>
+    <a class="nav-link" href="presentations.html">Presentations</a>
+    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
+    <div class="nav-group-label">Communication</div>
+    <a class="nav-link" href="announcements.html">Announcements</a>
+    <a class="nav-link" href="course-content.html">Course Content</a>
+    <div class="nav-group-label">System</div>
+    <a class="nav-link active" href="reports.html">Reports</a>
+    <a class="nav-link" href="backup.html">Backup</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Reports</h1><div class="today">Every report downloads as an .xlsx file</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+      <div class="report-card">
+        <h3>Student Report</h3>
+        <p>Every student's full profile — contact info, program, semester, section, status, and enrolled courses.</p>
+        <button class="btn btn-primary-sm" id="btn-student-report">Download</button>
+      </div>
+
+      <div class="report-card">
+        <h3>Course Report</h3>
+        <p>All courses with credit hours, semester, section, teacher, and reference books.</p>
+        <button class="btn btn-primary-sm" id="btn-course-report">Download</button>
+      </div>
+
+      <div class="report-card">
+        <h3>Attendance Report</h3>
+        <p>Per-student attendance breakdown (present/absent/leave/late/excused) and percentage, with warnings under 75%.</p>
+        <select id="att-course"><option value="">All courses</option></select>
+        <button class="btn btn-primary-sm" id="btn-attendance-report">Download</button>
+      </div>
+
+      <div class="report-card">
+        <h3>Daily Attendance Log</h3>
+        <p>A day-by-day grid — one row per student, one column per date — showing exactly who was present, absent, on leave, late, or excused on every single day in the range you pick. Covers a whole semester or just one month.</p>
+        <select id="log-course" style="margin-bottom:10px;"><option value="">Select a course…</option></select>
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <input type="date" id="log-start" style="flex:1; padding:8px 10px; border:1px solid var(--hairline); border-radius:7px; font-size:13px;">
+          <input type="date" id="log-end" style="flex:1; padding:8px 10px; border:1px solid var(--hairline); border-radius:7px; font-size:13px;">
+        </div>
+        <button class="btn btn-primary-sm" id="btn-log-report">Download</button>
+      </div>
+
+      <div class="report-card">
+        <h3>Marks &amp; Gradebook Report</h3>
+        <p>Full weighted gradebook for one course — same numbers as the Gradebook tab, exported as a standalone report.</p>
+        <select id="marks-course"><option value="">Select a course…</option></select>
+        <button class="btn btn-primary-sm" id="btn-marks-report">Download</button>
+      </div>
+
+      <div class="report-card">
+        <h3>Assignment Report</h3>
+        <p>Every assignment with its per-student marks and completion status.</p>
+        <select id="assign-course"><option value="">All courses</option></select>
+        <button class="btn btn-primary-sm" id="btn-assignment-report">Download</button>
+      </div>
+
+      <div class="report-card">
+        <h3>Presentation Report</h3>
+        <p>Every presentation round with each student's topic, status, marks, and remarks.</p>
+        <select id="pres-course"><option value="">All courses</option></select>
+        <button class="btn btn-primary-sm" id="btn-presentation-report">Download</button>
+      </div>
+    </div>
+
+    <div class="form-msg" id="report-msg" style="margin-top:18px;"></div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/gradebook-common.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

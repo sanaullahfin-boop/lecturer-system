@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Announcements · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div></div>
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+    <div class="nav-group-label">Academics</div>
+    <a class="nav-link" href="students.html">Students</a>
+    <a class="nav-link" href="courses.html">Courses</a>
+    <a class="nav-link" href="attendance.html">Attendance</a>
+    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
+    <a class="nav-link" href="assignments.html">Assignments</a>
+    <a class="nav-link" href="presentations.html">Presentations</a>
+    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
+    <div class="nav-group-label">Communication</div>
+    <a class="nav-link active" href="announcements.html">Announcements</a>
+    <a class="nav-link" href="course-content.html">Course Content</a>
+    <div class="nav-group-label">System</div>
+    <a class="nav-link" href="reports.html">Reports</a>
+    <a class="nav-link" href="backup.html">Backup</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Announcements</h1><div class="today" id="item-count">—</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:22px;">
+      <h3>Post a New Announcement</h3>
+      <form id="announce-form">
+        <div class="form-grid">
+          <div class="field full"><label>Title *</label><input type="text" id="f-title" required></div>
+          <div class="field full"><label>Message *</label><input type="text" id="f-body" required placeholder="Keep it clear and short — students see this on their dashboard."></div>
+          <div class="field">
+            <label>Audience</label>
+            <select id="f-target" style="width:100%;padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;">
+              <option value="all">All students (every course)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-msg" id="form-msg"></div>
+        <button type="submit" class="btn btn-primary-sm" id="btn-save">Post Announcement</button>
+      </form>
+    </div>
+
+    <div class="table-panel">
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Message</th><th>Audience</th><th>Posted</th><th></th></tr></thead>
+        <tbody id="table-body"><tr><td colspan="5"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/gradebook-common.js"></script>
+<script src="js/announcements.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

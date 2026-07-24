@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backup · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div></div>
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+    <div class="nav-group-label">Academics</div>
+    <a class="nav-link" href="students.html">Students</a>
+    <a class="nav-link" href="courses.html">Courses</a>
+    <a class="nav-link" href="attendance.html">Attendance</a>
+    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
+    <a class="nav-link" href="assignments.html">Assignments</a>
+    <a class="nav-link" href="presentations.html">Presentations</a>
+    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
+    <div class="nav-group-label">Communication</div>
+    <a class="nav-link" href="announcements.html">Announcements</a>
+    <a class="nav-link" href="course-content.html">Course Content</a>
+    <div class="nav-group-label">System</div>
+    <a class="nav-link" href="reports.html">Reports</a>
+    <a class="nav-link active" href="backup.html">Backup</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Backup &amp; Restore</h1><div class="today">Full snapshot of your data — JSON or Excel</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px;">
+      <h3>Download Complete Backup</h3>
+      <p style="font-size:13px;color:var(--slate);margin:0 0 14px;line-height:1.6;">
+        Exports every collection (students, courses, attendance, assignments, presentations,
+        quizzes, tasks, exams, marks, gradebook adjustments, announcements, and course
+        content/ebook metadata) into one file. Keep it somewhere safe — Google Drive, a
+        USB drive, wherever you'd keep an important document.
+        <br><br>
+        <strong>Note:</strong> this backs up your data records, not the actual uploaded
+        files themselves (those stay in Firebase Storage) — but the download links to
+        them are included, so nothing is lost as long as Storage isn't separately cleared.
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary-sm" id="btn-backup">Download Backup (.json)</button>
+        <button class="btn btn-primary-sm" id="btn-backup-excel">Download Backup (Excel)</button>
+      </div>
+      <div class="form-msg" id="backup-msg"></div>
+      <p style="font-size:12px;color:var(--slate);margin-top:10px;">
+        The Excel version opens directly in Excel/Google Sheets — one tab per collection —
+        so you can browse or edit your data by hand if you ever need to. The JSON version
+        is the more exact, recommended format for restoring; use Excel mainly for reading
+        or lightly editing.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h3>Restore from Backup</h3>
+      <p style="font-size:13px;color:var(--slate);margin:0 0 14px;line-height:1.6;">
+        <strong>Restoring merges the backup into your current data</strong> — records with
+        the same ID (e.g. the same roll number or course code) get overwritten with the
+        backup's version; everything else is left alone. This does not delete records that
+        exist now but aren't in the backup. Use this to recover after a mistake, or to move
+        data between two Firebase projects. Accepts either a <strong>.json</strong> backup
+        or an <strong>.xlsx</strong> backup (from the buttons above).
+      </p>
+      <input type="file" id="restore-file" accept=".json,.xlsx,.xls" style="margin-bottom:12px;">
+      <br>
+      <button class="btn btn-outline" id="btn-restore">Restore from File</button>
+      <div class="progress-track" id="restore-progress-track" style="background:var(--parchment-2);border-radius:999px;height:6px;overflow:hidden;margin-top:12px;display:none;">
+        <div class="progress-fill" id="restore-progress-fill" style="height:100%;background:var(--brass);width:0%;"></div>
+      </div>
+      <div class="form-msg" id="restore-msg"></div>
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+      <h3>Blank Excel Template</h3>
+      <p style="font-size:13px;color:var(--slate);margin:0 0 14px;line-height:1.6;">
+        If you're starting fresh and want to see the exact column layout before you have
+        any real data to back up, download this empty version — one tab per collection,
+        headers only, no rows.
+      </p>
+      <button class="btn btn-outline" id="btn-blank-template">Download Blank Template (Excel)</button>
+    </div>
+
+    <div class="panel" style="margin-top:20px;border-top:3px solid var(--danger);">
+      <h3 style="color:var(--danger);">Danger Zone — Reset All Data</h3>
+      <p style="font-size:13px;color:var(--slate);margin:0 0 14px;line-height:1.6;">
+        Permanently deletes every record in every collection — students, courses,
+        attendance, assignments/presentations/quizzes/tasks/exams and their marks,
+        gradebook adjustments, announcements, and course content/ebook links.
+        <strong>This cannot be undone</strong> — download a backup first if there's
+        any chance you'll want this data later.
+        <br><br>
+        Your own admin login is never affected. <strong>Note:</strong> student login
+        accounts also aren't deleted by this (a browser-only limitation — see the
+        README) — they just become unused since their linked student records are gone.
+        <br><br>
+        <strong>Download a backup first before using this, unless you're certain.</strong>
+      </p>
+      <button class="btn btn-primary-sm" id="btn-reset" style="background:var(--danger);">Reset All Data</button>
+      <div class="form-msg" id="reset-msg"></div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/backup.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

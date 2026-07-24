@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Presentations · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Student Portal</small></div></div>
+    <div class="nav-group-label">My Records</div>
+    <a class="nav-link" href="student-dashboard.html">Dashboard</a>
+    <a class="nav-link" href="student-attendance.html">Attendance</a>
+    <a class="nav-link" href="student-marks.html">Marks</a>
+    <a class="nav-link" href="student-assignments.html">Assignments</a>
+    <a class="nav-link active" href="student-presentations.html">Presentations</a>
+    <a class="nav-link" href="student-course-content.html">Course Content</a>
+    <a class="nav-link" href="student-announcements.html">Announcements</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>My Presentations</h1><div class="today" id="item-count">—</div></div>
+      <div class="user-chip">
+        <div><div id="student-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="student-initial">·</div>
+      </div>
+    </div>
+
+    <div id="list">
+      <div class="empty-state"><span class="loading-dot"></span> Loading…</div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/student-presentations.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

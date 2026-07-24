@@ -1,0 +1,135 @@
+// ==========================================================================
+// FIRESTORE SECURITY RULES — Phase 1
+// ==========================================================================
+// Paste this into: Firebase Console → Firestore Database → Rules → Publish
+//
+// Design note: everything here is expressible with plain Security Rules
+// (no Cloud Functions, no custom claims) so the project never needs the
+// Blaze billing plan. Role is determined by:
+//   - /admins/{uid}                exists  -> caller is an administrator
+//   - /students/{rollNo}.authUid  == uid   -> caller is that student
+// ==========================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwningStudent(rollNumber) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/students/$(rollNumber)).data.authUid == request.auth.uid;
+    }
+
+    // ---- Admins collection: only readable by the admin's own uid doc.
+    // Written manually by the lecturer via the Firebase Console (Phase 1),
+    // never via the app itself.
+    match /admins/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---- Students: admin has full access. A student may only read their
+    // own document (by roll number) and can never write to it.
+    // IMPORTANT: this checks resource.data directly rather than doing a
+    // nested get() lookup, because student login runs a QUERY (find the
+    // student doc whose authUid matches me) rather than a direct get() by
+    // ID — and Firestore rules that call get() on the very document being
+    // queried can incorrectly deny that query with "Missing or
+    // insufficient permissions." Checking resource.data avoids that.
+    match /students/{rollNumber} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.authUid == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    // ---- studentLogins: maps a roll number to that student's actual login
+    // email (a randomly-generated one, unique per student, so re-adding a
+    // deleted roll number never collides with an old orphaned login). This
+    // MUST be readable even by signed-OUT visitors, because the login page
+    // needs to look up the right email BEFORE the student is authenticated
+    // — there's no way around that chicken-and-egg problem without a paid
+    // server. It only ever exposes a meaningless generated email address,
+    // never anything sensitive, so public read is a safe trade-off here.
+    match /studentLogins/{rollNumber} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- Courses: admin manages; any signed-in user can read (students
+    // need to see course names/details, but never edit them).
+    match /courses/{courseId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---- Attendance: admin manages everything. A student may only read
+    // records where the rollNumber field matches their own record.
+    // Doc ID scheme (set by the app): {courseCode}__{date}__{rollNumber}
+    match /attendance/{recordId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && isOwningStudent(resource.data.rollNumber));
+      allow write: if isAdmin();
+    }
+
+    // ---- Phase 3: gradeItems (assignments/presentations/quizzes/tasks/exam
+    // definitions). Admin manages; any signed-in user can read the
+    // definitions (students need to see titles/due dates), same pattern as
+    // courses.
+    match /gradeItems/{itemId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---- Phase 3: gradeMarks (actual marks/remarks per student per item).
+    // Admin manages everything. A student may only read their own marks.
+    match /gradeMarks/{markId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && isOwningStudent(resource.data.rollNumber));
+      allow write: if isAdmin();
+    }
+
+    // ---- Phase 3: gradebookAdjustments (manual bonus/negative marks per
+    // student per course). Admin manages; a student may read their own.
+    match /gradebookAdjustments/{adjId} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && isOwningStudent(resource.data.rollNumber));
+      allow write: if isAdmin();
+    }
+
+    // ---- Phase 4: announcements. Admin manages; any signed-in user can
+    // read (audience filtering by course/target happens client-side, since
+    // announcements carry no sensitive per-student data).
+    match /announcements/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---- Phase 4: courseContent (lecture notes/files metadata — the URL
+    // is a Google Drive share link, not a Firebase Storage file). Admin
+    // manages; any signed-in user can read the metadata/links.
+    match /courseContent/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---- Phase 4: ebooks (library metadata). Same pattern.
+    match /ebooks/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---- Everything else follows the same pattern once each module is
+    // built in later phases (reports, backups). Locked down by default
+    // until each collection's specific rule is added.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

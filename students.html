@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="seal">SC</div>
+      <div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div>
+    </div>
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+    <div class="nav-group-label">Academics</div>
+    <a class="nav-link active" href="students.html">Students</a>
+    <a class="nav-link" href="courses.html">Courses</a>
+    <a class="nav-link" href="attendance.html">Attendance</a>
+    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
+    <a class="nav-link" href="assignments.html">Assignments</a>
+    <a class="nav-link" href="presentations.html">Presentations</a>
+    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
+    <div class="nav-group-label">Communication</div>
+    <a class="nav-link" href="announcements.html">Announcements</a>
+    <a class="nav-link" href="course-content.html">Course Content</a>
+    <div class="nav-group-label">System</div>
+    <a class="nav-link" href="reports.html">Reports</a>
+    <a class="nav-link" href="backup.html">Backup</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Students</h1>
+        <div class="today" id="student-count">—</div>
+      </div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" class="search-input" id="search-input" placeholder="Search by roll number, name, program…">
+      <div class="toolbar-actions">
+        <button class="btn btn-outline" id="btn-export">Export Excel</button>
+        <button class="btn btn-outline" id="btn-import">Import Excel</button>
+        <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none;">
+        <button class="btn btn-primary-sm" id="btn-add">+ Add Student</button>
+      </div>
+    </div>
+
+    <div id="import-progress" class="form-msg info" style="display:none;"></div>
+
+    <div class="table-panel">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Roll No.</th><th>Name</th><th>Program</th><th>Sem</th>
+            <th>Section</th><th>Status</th><th>Password</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="8"><div class="empty-state"><span class="loading-dot"></span> Loading students…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h2 id="modal-title">Add Student</h2>
+    <form id="student-form">
+      <input type="hidden" id="original-roll">
+      <div class="form-grid">
+        <div class="field">
+          <label>Roll Number *</label>
+          <input type="text" id="f-roll" required placeholder="e.g. BSF-21-014">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="f-status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="graduated">Graduated</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Full Name *</label>
+          <input type="text" id="f-name" required>
+        </div>
+        <div class="field full">
+          <label>Father's Name</label>
+          <input type="text" id="f-father">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="f-email" placeholder="personal email (optional)">
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" id="f-phone">
+        </div>
+        <div class="field">
+          <label>Program *</label>
+          <input type="text" id="f-program" required placeholder="e.g. BS Finance, BBA, MBA">
+        </div>
+        <div class="field">
+          <label>Semester *</label>
+          <input type="number" id="f-semester" required min="1" max="8">
+        </div>
+        <div class="field">
+          <label>Section</label>
+          <input type="text" id="f-section" placeholder="e.g. A">
+        </div>
+        <div class="field">
+          <label>Session</label>
+          <input type="text" id="f-session" placeholder="e.g. Fall 2023–2027">
+        </div>
+        <div class="field full">
+          <label>Enrolled Courses (comma-separated course codes)</label>
+          <input type="text" id="f-courses" placeholder="e.g. FIN301, FIN405">
+        </div>
+        <div class="field full">
+          <label>Notes</label>
+          <input type="text" id="f-notes">
+        </div>
+        <div class="field full" id="password-field">
+          <label>Login Password * <span style="font-weight:400;text-transform:none;">(student will use this with their roll number to sign in)</span></label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="f-password" placeholder="e.g. a temporary password they can change later" style="flex:1;">
+            <button type="button" class="btn btn-outline" id="btn-generate-password" style="white-space:nowrap;">Generate</button>
+          </div>
+        </div>
+        <div class="field full" id="password-view-field" style="display:none;">
+          <label>Login Password</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" id="f-password-view" readonly style="flex:1; background:var(--parchment-2);">
+            <button type="button" class="btn btn-outline" id="btn-toggle-password-visibility" style="white-space:nowrap;">Show</button>
+          </div>
+          <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+            <input type="text" id="f-password-new" placeholder="Type a new password to change it">
+            <button type="button" class="btn btn-outline" id="btn-change-password" style="white-space:nowrap;">Change Password</button>
+          </div>
+          <div class="form-msg" id="password-change-msg"></div>
+        </div>
+      </div>
+      <div class="form-msg" id="form-msg"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="btn-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary-sm" id="btn-save">Save Student</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/students.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

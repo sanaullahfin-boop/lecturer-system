@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Content · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--hairline); }
+  .tab-btn { padding: 10px 4px; margin-right: 22px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--slate); border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--ink); border-color: var(--brass); }
+  .howto { font-size: 12.5px; color: var(--slate); background: var(--parchment-2); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; line-height: 1.6; }
+  .howto strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div></div>
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+    <div class="nav-group-label">Academics</div>
+    <a class="nav-link" href="students.html">Students</a>
+    <a class="nav-link" href="courses.html">Courses</a>
+    <a class="nav-link" href="attendance.html">Attendance</a>
+    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
+    <a class="nav-link" href="assignments.html">Assignments</a>
+    <a class="nav-link" href="presentations.html">Presentations</a>
+    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
+    <div class="nav-group-label">Communication</div>
+    <a class="nav-link" href="announcements.html">Announcements</a>
+    <a class="nav-link active" href="course-content.html">Course Content</a>
+    <div class="nav-group-label">System</div>
+    <a class="nav-link" href="reports.html">Reports</a>
+    <a class="nav-link" href="backup.html">Backup</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Course Content</h1><div class="today" id="item-count">—</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-files">Lecture Notes &amp; Files</button>
+      <button class="tab-btn" id="tab-ebooks">Ebook Library</button>
+    </div>
+
+    <!-- FILES -->
+    <div id="panel-files">
+      <div class="panel" style="margin-bottom:22px;">
+        <h3>Add a Course File (via Google Drive link)</h3>
+        <div class="howto">
+          <strong>How this works:</strong> upload your file to Google Drive first, then right-click it →
+          <strong>Share</strong> → make sure it's set to <strong>"Anyone with the link"</strong> can view →
+          <strong>Copy link</strong> → paste that link below. This keeps the whole system 100% free
+          with no credit card, since Firebase Storage now requires billing to be linked even for small usage.
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Course *</label><select id="upload-course"></select></div>
+          <div class="field">
+            <label>Category</label>
+            <select id="upload-category">
+              <option>Lecture Notes</option>
+              <option>Course Outline</option>
+              <option>Reference Material</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field full"><label>File Name (what students will see) *</label><input type="text" id="upload-filename" placeholder="e.g. Week 3 - Time Value of Money.pdf"></div>
+          <div class="field full"><label>Google Drive Link *</label><input type="text" id="upload-link" placeholder="https://drive.google.com/file/d/..."></div>
+        </div>
+        <button class="btn btn-primary-sm" id="btn-upload">Add File</button>
+        <div class="form-msg" id="upload-msg"></div>
+      </div>
+
+      <div class="toolbar">
+        <select id="filter-course" style="max-width:260px;padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;">
+          <option value="">All courses</option>
+        </select>
+      </div>
+      <div class="table-panel">
+        <table class="data-table">
+          <thead><tr><th>File</th><th>Course</th><th>Category</th><th>Added</th><th></th></tr></thead>
+          <tbody id="files-body"><tr><td colspan="5"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EBOOKS -->
+    <div id="panel-ebooks" style="display:none;">
+      <div class="panel" style="margin-bottom:22px;">
+        <h3>Add Ebook (via Google Drive link)</h3>
+        <div class="howto">
+          Same idea: upload the PDF to Google Drive, set sharing to <strong>"Anyone with the link"</strong>,
+          copy the link, and paste it below.
+        </div>
+        <div class="form-grid">
+          <div class="field full"><label>Title *</label><input type="text" id="ebook-title" required></div>
+          <div class="field"><label>Author</label><input type="text" id="ebook-author"></div>
+          <div class="field"><label>Subject *</label><input type="text" id="ebook-subject" placeholder="e.g. Corporate Finance"></div>
+          <div class="field full"><label>Google Drive Link *</label><input type="text" id="ebook-link" placeholder="https://drive.google.com/file/d/..."></div>
+        </div>
+        <button class="btn btn-primary-sm" id="btn-ebook-upload">Add Ebook</button>
+        <div class="form-msg" id="ebook-msg"></div>
+      </div>
+
+      <div class="table-panel">
+        <table class="data-table">
+          <thead><tr><th>Title</th><th>Author</th><th>Subject</th><th></th></tr></thead>
+          <tbody id="ebooks-body"><tr><td colspan="4"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/gradebook-common.js"></script>
+<script src="js/course-content.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--hairline); }
+  .tab-btn {
+    padding: 10px 4px; margin-right: 22px; background: none; border: none; cursor: pointer;
+    font-size: 14px; font-weight: 600; color: var(--slate); border-bottom: 2px solid transparent;
+  }
+  .tab-btn.active { color: var(--ink); border-color: var(--brass); }
+  .filter-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; align-items: flex-end; }
+  .filter-row .field { margin-bottom: 0; min-width: 160px; }
+  .filter-row select, .filter-row input { padding: 9px 12px; border: 1px solid var(--hairline); border-radius: 8px; font-size: 13.5px; width: 100%; }
+  .status-btn-group { display: flex; gap: 6px; }
+  .status-btn {
+    padding: 5px 10px; border-radius: 6px; border: 1px solid var(--hairline);
+    background: var(--paper); font-size: 11.5px; font-weight: 600; cursor: pointer; color: var(--slate);
+  }
+  .status-btn.present.selected { background: rgba(47,125,92,0.15); border-color: var(--success); color: var(--success); }
+  .status-btn.absent.selected { background: rgba(181,72,77,0.15); border-color: var(--danger); color: var(--danger); }
+  .status-btn.leave.selected, .status-btn.excused.selected { background: rgba(176,141,87,0.18); border-color: var(--brass); color: var(--brass-dark); }
+  .status-btn.late.selected { background: rgba(201,127,48,0.16); border-color: var(--warning); color: var(--warning); }
+  .pct-bar-track { background: var(--parchment-2); border-radius: 999px; height: 8px; width: 100px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 8px; }
+  .pct-bar-fill { height: 100%; background: var(--success); }
+  .pct-bar-fill.low { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="seal">SC</div>
+      <div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div>
+    </div>
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
+    <div class="nav-group-label">Academics</div>
+    <a class="nav-link" href="students.html">Students</a>
+    <a class="nav-link" href="courses.html">Courses</a>
+    <a class="nav-link active" href="attendance.html">Attendance</a>
+    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
+    <a class="nav-link" href="assignments.html">Assignments</a>
+    <a class="nav-link" href="presentations.html">Presentations</a>
+    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
+    <div class="nav-group-label">Communication</div>
+    <a class="nav-link" href="announcements.html">Announcements</a>
+    <a class="nav-link" href="course-content.html">Course Content</a>
+    <div class="nav-group-label">System</div>
+    <a class="nav-link" href="reports.html">Reports</a>
+    <a class="nav-link" href="backup.html">Backup</a>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Attendance</h1>
+        <div class="today" id="today-label"></div>
+      </div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-mark">Mark Attendance</button>
+      <button class="tab-btn" id="tab-report">Report &amp; Warnings</button>
+    </div>
+
+    <!-- MARK ATTENDANCE -->
+    <div id="panel-mark">
+      <div class="filter-row">
+        <div class="field">
+          <label>Course</label>
+          <select id="mark-course"><option value="">Select a course…</option></select>
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="mark-date">
+        </div>
+        <div class="field">
+          <button class="btn btn-primary-sm" id="btn-save-attendance" disabled>Save Attendance</button>
+        </div>
+      </div>
+      <div class="form-msg" id="mark-msg"></div>
+
+      <div class="panel" style="margin-bottom:18px;">
+        <h3>Bulk Attendance (a whole month at once)</h3>
+        <p style="font-size:12.5px;color:var(--slate);margin:0 0 12px;line-height:1.6;">
+          Download a spreadsheet with one column per day of a chosen month, fill in each
+          cell with <strong>P</strong> (Present), <strong>A</strong> (Absent), <strong>L</strong> (Leave),
+          <strong>Lt</strong> (Late), or <strong>E</strong> (Excused) — leave a cell blank for days with
+          no class — then upload it back here.
+        </p>
+        <div class="filter-row" style="margin-bottom:10px;">
+          <div class="field">
+            <label>Month</label>
+            <input type="month" id="bulk-month">
+          </div>
+          <div class="field">
+            <button class="btn btn-outline" id="btn-download-template">Download Template</button>
+          </div>
+          <div class="field">
+            <button class="btn btn-outline" id="btn-import-bulk">Upload Filled Template</button>
+            <input type="file" id="bulk-file" accept=".xlsx,.xls" style="display:none;">
+          </div>
+        </div>
+        <div class="form-msg" id="bulk-msg"></div>
+      </div>
+
+      <div class="table-panel">
+        <table class="data-table">
+          <thead><tr><th>Roll No.</th><th>Name</th><th>Mark</th></tr></thead>
+          <tbody id="mark-body">
+            <tr><td colspan="3"><div class="empty-state">Select a course to load its roster.</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="panel-report" style="display:none;">
+      <div class="filter-row">
+        <div class="field">
+          <label>Course</label>
+          <select id="report-course"><option value="">All courses</option></select>
+        </div>
+        <div class="field">
+          <button class="btn btn-outline" id="btn-run-report">Run Report</button>
+        </div>
+      </div>
+      <div class="table-panel">
+        <table class="data-table">
+          <thead><tr><th>Roll No.</th><th>Name</th><th>Attendance %</th><th>Status</th></tr></thead>
+          <tbody id="report-body">
+            <tr><td colspan="4"><div class="empty-state">Run the report to see attendance percentages and warnings (below 75%).</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/attendance.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

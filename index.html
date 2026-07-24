@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Sign In · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="login-shell">
+  <div class="login-card">
+    <div class="seal">SC</div>
+    <h1 class="login-title">Welcome back</h1>
+    <p class="login-sub">A personal classroom manager by Dr. Sanaullah</p>
+
+    <div class="role-toggle">
+      <button type="button" id="tab-admin" class="active">Administrator</button>
+      <button type="button" id="tab-student">Student</button>
+    </div>
+
+    <!-- Administrator form -->
+    <form id="form-admin">
+      <div class="field">
+        <label for="admin-email">Email</label>
+        <input type="email" id="admin-email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="admin-password">Password</label>
+        <input type="password" id="admin-password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="admin-submit">Sign In</button>
+    </form>
+
+    <!-- Student form -->
+    <form id="form-student" style="display:none;">
+      <div class="field">
+        <label for="student-roll">Roll Number</label>
+        <input type="text" id="student-roll" placeholder="e.g. BSF-21-014" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="student-password">Password</label>
+        <input type="password" id="student-password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="student-submit">Sign In</button>
+    </form>
+
+    <div class="form-msg" id="msg"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  const tabAdmin = document.getElementById('tab-admin');
+  const tabStudent = document.getElementById('tab-student');
+  const formAdmin = document.getElementById('form-admin');
+  const formStudent = document.getElementById('form-student');
+  const msg = document.getElementById('msg');
+
+  function showMsg(text, type) {
+    msg.textContent = text;
+    msg.className = 'form-msg ' + type;
+  }
+  function clearMsg() {
+    msg.textContent = '';
+    msg.className = 'form-msg';
+  }
+
+  tabAdmin.addEventListener('click', () => {
+    tabAdmin.classList.add('active');
+    tabStudent.classList.remove('active');
+    formAdmin.style.display = 'block';
+    formStudent.style.display = 'none';
+    clearMsg();
+  });
+
+  tabStudent.addEventListener('click', () => {
+    tabStudent.classList.add('active');
+    tabAdmin.classList.remove('active');
+    formStudent.style.display = 'block';
+    formAdmin.style.display = 'none';
+    clearMsg();
+  });
+
+  formAdmin.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg();
+    const btn = document.getElementById('admin-submit');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    try {
+      await loginAsAdmin(
+        document.getElementById('admin-email').value,
+        document.getElementById('admin-password').value
+      );
+      window.location.href = 'admin-dashboard.html';
+    } catch (err) {
+      showMsg(friendlyAuthError(err), 'error');
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  });
+
+  formStudent.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg();
+    const btn = document.getElementById('student-submit');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    try {
+      await loginAsStudent(
+        document.getElementById('student-roll').value,
+        document.getElementById('student-password').value
+      );
+      window.location.href = 'student-dashboard.html';
+    } catch (err) {
+      showMsg(friendlyAuthError(err), 'error');
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  });
+
+  function friendlyAuthError(err) {
+    const code = err && err.code;
+    if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+      return 'Incorrect credentials. Please check and try again.';
+    }
+    if (code === 'auth/too-many-requests') {
+      return 'Too many attempts. Please wait a few minutes and try again.';
+    }
+    if (code === 'auth/network-request-failed') {
+      return 'Network error. Check your internet connection.';
+    }
+    return err.message || 'Something went wrong. Please try again.';
+  }
+</script>
+</body>
+</html>
