@@ -6,6 +6,9 @@
 <title>Sign In · Sanaullah's Classroom</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -57,6 +60,7 @@
 <script src="js/firebase-keys.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/core.js"></script>
 <script>
   const tabAdmin = document.getElementById('tab-admin');
   const tabStudent = document.getElementById('tab-student');
@@ -91,6 +95,7 @@
 
   formAdmin.addEventListener('submit', async (e) => {
     e.preventDefault();
+    window.__signingIn = true;
     clearMsg();
     const btn = document.getElementById('admin-submit');
     btn.disabled = true; btn.textContent = 'Signing in…';
@@ -101,6 +106,7 @@
       );
       window.location.href = 'admin-dashboard.html';
     } catch (err) {
+      window.__signingIn = false;
       showMsg(friendlyAuthError(err), 'error');
       btn.disabled = false; btn.textContent = 'Sign In';
     }
@@ -108,6 +114,7 @@
 
   formStudent.addEventListener('submit', async (e) => {
     e.preventDefault();
+    window.__signingIn = true;
     clearMsg();
     const btn = document.getElementById('student-submit');
     btn.disabled = true; btn.textContent = 'Signing in…';
@@ -118,9 +125,20 @@
       );
       window.location.href = 'student-dashboard.html';
     } catch (err) {
+      window.__signingIn = false;
       showMsg(friendlyAuthError(err), 'error');
       btn.disabled = false; btn.textContent = 'Sign In';
     }
+  });
+
+  // Already signed in (e.g. reopening the app)? Skip the login screen.
+  auth.onAuthStateChanged(async (user) => {
+    if (!user || window.__signingIn) return;
+    try {
+      const adminDoc = await db.collection('admins').doc(user.uid).get();
+      if (adminDoc.exists) { window.location.href = 'admin-dashboard.html'; return; }
+      if (localStorage.getItem(STUDENT_ROLL_CACHE_KEY)) window.location.href = 'student-dashboard.html';
+    } catch (e) { /* stay on login */ }
   });
 
   function friendlyAuthError(err) {

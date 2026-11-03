@@ -6,37 +6,29 @@
 <title>My Assignments · Sanaullah's Classroom</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Student Portal</small></div></div>
-    <div class="nav-group-label">My Records</div>
-    <a class="nav-link" href="student-dashboard.html">Dashboard</a>
-    <a class="nav-link" href="student-attendance.html">Attendance</a>
-    <a class="nav-link" href="student-marks.html">Marks</a>
-    <a class="nav-link active" href="student-assignments.html">Assignments</a>
-    <a class="nav-link" href="student-presentations.html">Presentations</a>
-    <a class="nav-link" href="student-course-content.html">Course Content</a>
-    <a class="nav-link" href="student-announcements.html">Announcements</a>
-  </aside>
+  <aside class="sidebar" data-role="student" data-active="assignments"></aside>
 
   <main class="main">
     <div class="topbar">
-      <div><h1>My Assignments</h1><div class="today" id="item-count">—</div></div>
+      <div><h1>My Assignments</h1><div class="today" id="item-count"></div></div>
       <div class="user-chip">
         <div><div id="student-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
         <div class="avatar" id="student-initial">·</div>
       </div>
     </div>
 
-    <div id="list">
-      <div class="empty-state"><span class="loading-dot"></span> Loading…</div>
-    </div>
+    <div id="list"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></div>
   </main>
 </div>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -44,6 +36,8 @@
 <script src="js/firebase-keys.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
 <script src="js/student-assignments.js"></script>
 <script src="js/mobile-nav.js"></script>
 </body>

@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help & Guide · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" data-role="admin" data-active="help"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Help &amp; Guide</h1><div class="today" id="page-sub">Setup, daily use, settings and troubleshooting — keep it for later or hand it over</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="gap-row no-print" style="margin-bottom:14px;"><input type="text" class="search-input" id="guide-search" placeholder="Search the guide (e.g. permissions, backup, quiz)…"><button class="btn btn-outline" onclick="window.print()">Print / Save PDF</button></div>
+    <div class="guide-layout">
+      <article class="guide" id="guide"><p>Version 3 · October 2026. This guide covers installing, updating, daily use, every setting, and fixing problems. The same guide is inside the app under <strong>Help &amp; Guide</strong>.</p>
+<h2>1. What the app is and where it lives</h2>
+<p>Sanaullah&#39;s Classroom is a free web app for one lecturer and their students. It runs entirely on free services: no server, no monthly fee, no credit card.</p>
+<p>There are two portals behind one sign-in page:</p>
+<ul>
+<li><strong>Admin console</strong> (the lecturer). Plan courses, take attendance, run quizzes, enter marks, run the gradebook, print reports, change every rule.</li>
+<li><strong>Student portal.</strong> Each student signs in with roll number + password and sees only their own attendance, marks, quizzes, deadlines, course progress, files and announcements.</li>
+</ul>
+<p>The app is made of six separate pieces. Knowing where each one is lets you fix almost any problem.</p>
+<table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>What it is</th>
+<th>Where it is</th>
+<th>Who controls it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Code</td>
+<td>The app&#39;s files (pages, styles, scripts)</td>
+<td>A GitHub repository under the account <code>sanaullahfin-boop</code></td>
+<td>You, by uploading files on github.com</td>
+</tr>
+<tr>
+<td>Website</td>
+<td>The live app people open</td>
+<td>GitHub Pages: <code>https://sanaullahfin-boop.github.io/&lt;your-repo-name&gt;/</code></td>
+<td>Built automatically from the repository</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>Students, courses, attendance, marks, plans, quizzes, settings</td>
+<td>Firebase project <code>lecturer-system-2d6d9</code> → Firestore Database</td>
+<td>You, at console.firebase.google.com</td>
+</tr>
+<tr>
+<td>Logins</td>
+<td>Your admin login and every student&#39;s login</td>
+<td>Same Firebase project → Authentication</td>
+<td>You, in the Firebase Console</td>
+</tr>
+<tr>
+<td>Files and ebooks</td>
+<td>Lecture notes, slides, PDFs, student submissions</td>
+<td>Google Drive (the app stores only the share links)</td>
+<td>You and your students</td>
+</tr>
+<tr>
+<td>Phone app</td>
+<td>The Android app icon (APK)</td>
+<td>Installed on phones; it opens the live website</td>
+<td>You hold <code>signing.keystore</code> and its password, which must stay private</td>
+</tr>
+</tbody></table>
+<p>The file <code>js/firebase-keys.js</code> connects the code to the Firebase project. It is the only file you ever edit by hand.</p>
+<p>The Firebase web keys in that file are not secret. They only identify the project; the security rules (<code>docs/firestore.rules</code>) decide who can read or change data.</p>
+<h2>2. First-time installation (from scratch)</h2>
+<p>Follow this only for a brand-new copy, for example when handing the app to another lecturer. It takes about 30 minutes and needs a free Google account and a free GitHub account. Your existing app is already installed; to update it, go to section 3.</p>
+<h3>A. Create the Firebase project (database and logins)</h3>
+<ol>
+<li>Open <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a> and sign in with a Google account.</li>
+<li>Click <strong>Add project</strong> and give it a name (e.g. <code>lecturer-system</code>). Turn Google Analytics off and click <strong>Create project</strong>. No card is asked for; stay on the free <strong>Spark</strong> plan.</li>
+<li>Click the gear icon → <strong>Project settings</strong> → <strong>General</strong>. Scroll to <strong>Your apps</strong> and click the <strong>Web</strong> icon <code>&lt;/&gt;</code>. Type any nickname, leave Hosting unticked, and click <strong>Register app</strong>.</li>
+<li>Firebase shows a block called <code>firebaseConfig</code>. Keep this page open; you need five of its values in step C.</li>
+<li>Open <strong>Build → Authentication</strong> → <strong>Get started</strong> → <strong>Sign-in method</strong> → <strong>Email/Password</strong> → <strong>Enable</strong> → <strong>Save</strong>.</li>
+<li>Open <strong>Build → Firestore Database</strong> → <strong>Create database</strong>. Choose a location close to you (e.g. <code>asia-south1</code>, Mumbai), then <strong>Start in production mode</strong> → <strong>Create</strong>. The location cannot be changed later.</li>
+<li>In Firestore open the <strong>Rules</strong> tab. Delete everything there, paste the whole of <code>docs/firestore.rules</code> from the app folder, and click <strong>Publish</strong>.</li>
+</ol>
+<h3>B. Create your admin login</h3>
+<ol>
+<li>In <strong>Authentication → Users</strong> click <strong>Add user</strong>. Enter your real email and a strong password.</li>
+<li>Copy the long <strong>User UID</strong> shown in the new row.</li>
+<li>In <strong>Firestore Database → Data</strong> click <strong>Start collection</strong>. Collection ID: <code>admins</code>. Document ID: paste the UID.</li>
+<li>Add two fields, both of type <em>string</em>: <code>name</code> = your display name (e.g. <code>Dr. Sanaullah</code>) and <code>email</code> = the same email. Click <strong>Save</strong>.</li>
+</ol>
+<h3>C. Put your keys into the app</h3>
+<ol>
+<li>Unzip the app folder on your computer.</li>
+<li>Open <code>js/firebase-keys.js</code> in Notepad.</li>
+<li>Replace each value inside the quotes with the matching value from step A4: <code>apiKey</code>, <code>authDomain</code>, <code>projectId</code>, <code>messagingSenderId</code>, <code>appId</code>. Keep the quotes and commas, then save.</li>
+</ol>
+<h3>D. Put the app online with GitHub Pages</h3>
+<ol>
+<li>Sign in at <a href="https://github.com" target="_blank" rel="noopener">github.com</a> → <strong>New repository</strong>. Name it (e.g. <code>classroom</code>) and choose <strong>Public</strong>; GitHub Pages is free only for public repositories. Click <strong>Create repository</strong>.</li>
+<li>Click <strong>uploading an existing file</strong>. Drag in <strong>everything inside</strong> the app folder: all <code>.html</code> files, <code>manifest.json</code>, <code>sw.js</code>, and the <code>css</code>, <code>js</code>, <code>icons</code>, <code>docs</code> folders. Click <strong>Commit changes</strong>. Upload the folder contents, not a zip file.</li>
+<li>Open <strong>Settings → Pages</strong>. Under <strong>Build and deployment</strong> choose <strong>Deploy from a branch</strong>, branch <strong>main</strong>, folder <strong>/ (root)</strong>, then <strong>Save</strong>.</li>
+<li>After one to two minutes the page shows your address, e.g. <code>https://yourname.github.io/classroom/</code>. Open it; you should see the sign-in page.</li>
+<li>Sign in on the <strong>Administrator</strong> tab with the email and password from step B.</li>
+</ol>
+<h3>E. First things to do inside the app</h3>
+<ol>
+<li><strong>Settings.</strong> Enter your name, department, institution and the active term (e.g. <code>Fall 2026</code>). Review the attendance options and grading rules, then click <strong>Save Settings</strong>.</li>
+<li><strong>Courses → + Add Course</strong>, or <strong>Import Excel</strong> using <code>docs/sample-courses.xlsx</code> as the layout. Fill in the Term for every course.</li>
+<li><strong>Students → + Add Student</strong>, or <strong>Import Excel</strong> using <code>docs/sample-students.xlsx</code>. Put each student&#39;s course codes in <em>Enrolled Courses</em>. The app creates their login automatically and shows the password.</li>
+<li><strong>Course Plans:</strong> create a plan for each course.</li>
+<li>Give each student the website address, their roll number and their password.</li>
+</ol>
+<h2>3. Updating to a new version without losing data</h2>
+<p>Updating replaces only the code on GitHub. Your data lives in Firebase and is never touched by uploading files, so students, attendance and marks stay exactly as they are.</p>
+<ol>
+<li><strong>Back up first.</strong> In the app open <strong>Backup</strong>, click <strong>Download Backup (.json)</strong> and <strong>Download Backup (Excel)</strong>, and save both to Google Drive. This is your safety net if anything goes wrong.</li>
+<li><strong>Keep your key file.</strong> New versions come with your <code>js/firebase-keys.js</code> already inside. If a new zip ever has an empty key file, copy your old one over it before uploading.</li>
+<li><strong>Upload the new files.</strong> On github.com open your repository → <strong>Add file → Upload files</strong>. Drag in everything from the new folder and click <strong>Commit changes</strong>. Files with the same name are replaced; old extra files can stay.</li>
+<li><strong>Publish the rules.</strong> Firebase Console → Firestore Database → <strong>Rules</strong> → paste the new <code>docs/firestore.rules</code> → <strong>Publish</strong>. Do this every update, even if you think the rules did not change. Skipping it is the most common cause of &quot;Missing or insufficient permissions&quot;.</li>
+<li><strong>Wait two minutes.</strong> Open the website and press <strong>Ctrl+F5</strong>; on a phone, close and reopen the app. This makes the browser fetch the new version.</li>
+<li><strong>Follow the version&#39;s notes.</strong> If the dashboard shows a banner such as &quot;One-time upgrade needed&quot;, click it and follow the steps. These upgrades only add or convert data. Nothing is deleted until you press a separate, clearly-labelled delete button.</li>
+</ol>
+<h3>Version history</h3>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Date</th>
+<th>Main changes</th>
+<th>One-time step</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4</td>
+<td>Nov 2026</td>
+<td>PDF upload + in-app reader, course plan from Excel/PDF/Word, QR check-in, leave requests, calendar export, Change History</td>
+<td>Publish new rules (no data changes)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Oct 2026</td>
+<td>Online quizzes, live check-in, online assignment submission, your own attendance options, editable lists, in-app Help</td>
+<td>Publish new rules (no data changes)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Oct 2026</td>
+<td>Course plans, Settings rules, report builder, offline mode, WhatsApp, dark mode</td>
+<td>Upgrade attendance (Settings → Maintenance)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2026</td>
+<td>Students, courses, attendance, gradebook, reports, backup</td>
+<td>First setup</td>
+</tr>
+</tbody></table>
+<h3>Handing the app to someone else</h3>
+<ul>
+<li><strong>Same data, new person running it</strong> (e.g. a colleague takes over):<ol>
+<li>Firebase Console → <strong>Project settings → Users and permissions</strong> → <strong>Add member</strong>, with their Google email as <em>Owner</em>.</li>
+<li>GitHub → repository <strong>Settings → Collaborators</strong> → add them.</li>
+<li>Create their admin login (section 2, step B).</li>
+</ol>
+</li>
+<li><strong>A fresh copy for another lecturer with their own students:</strong> give them the app zip and this guide. They follow section 2 with their own Firebase and GitHub accounts. Remove <code>signing.keystore</code> and your key values from the copy you hand over; they create their own.</li>
+</ul>
+<h2>4. Installing on phones</h2>
+<p>The app works in any phone browser, but an icon on the home screen is quicker. There are two free ways.</p>
+<p><strong>Option 1: Add to Home Screen (anyone, 30 seconds).</strong> Best for students.</p>
+<ol>
+<li>Open the website address in <strong>Chrome</strong> on Android, or <strong>Safari</strong> on iPhone.</li>
+<li>Android: tap <strong>⋮ → Add to Home screen → Install</strong>. iPhone: tap <strong>Share → Add to Home Screen</strong>.</li>
+<li>The app now opens full-screen from its icon. Pages you have already opened also work offline.</li>
+</ol>
+<p><strong>Option 2: Your Android APK (already built).</strong> Your file <code>Sanaullah_s_Classroom.apk</code> was made with PWABuilder.</p>
+<ol>
+<li>Send the APK to the phone (WhatsApp to yourself, Google Drive, or USB).</li>
+<li>Tap it. The first time, Android asks to allow installs from this source; allow it.</li>
+<li>The APK simply opens your live website, so every update you upload appears in it automatically. You only rebuild an APK to change its name or icon.</li>
+<li>To rebuild, open <a href="https://www.pwabuilder.com" target="_blank" rel="noopener">pwabuilder.com</a>, paste your website address, then <strong>Package for stores → Android</strong>. Under signing choose <strong>Use mine</strong> and upload your existing <code>signing.keystore</code> with the alias and passwords from <code>signing-key-info.txt</code>. Using the same key lets the new APK install over the old one.</li>
+</ol>
+<p>Keep <code>signing.keystore</code> and <code>signing-key-info.txt</code> somewhere private, such as your own Google Drive. Never upload them to the public GitHub repository.</p>
+<h2>5. Daily use: every admin page</h2>
+<p>The left menu groups pages by job. Every page shows today&#39;s date, and the bottom of the menu shows <strong>Online/Offline</strong> and the light/dark switch.</p>
+<h3>Dashboard</h3>
+<p>Your one-screen summary for the active term.</p>
+<ul>
+<li><strong>Banners</strong> at the top tell you what needs attention: attendance not yet marked today, backup older than 14 days, the active term.</li>
+<li><strong>Stat cards:</strong> active students, courses this term, present/absent today, attendance warnings, average course covered.</li>
+<li><strong>Course Progress:</strong> a ring per course showing how much of the course plan is taught. The thin line on the bar shows where the plan expects you to be today. Click a card to open that plan.</li>
+<li><strong>Today:</strong> classes planned for today, with a <strong>Mark attendance</strong> button for each.</li>
+<li><strong>Attendance Trend:</strong> the class attendance % for the last 30 class days, with your warning line.</li>
+<li><strong>Upcoming Deadlines, students below the threshold</strong> (with WhatsApp buttons), and <strong>Recent Announcements</strong>.</li>
+</ul>
+<h3>Course Plans</h3>
+<p>Plan every lecture of the semester, then tick topics as you teach them.</p>
+<ol>
+<li>Choose a course. If it has no plan, enter the <strong>semester start date</strong>, <strong>total weeks</strong> (16), <strong>mid-term week</strong> (8), <strong>final week</strong> (16) and your <strong>class days</strong> (e.g. Mon, Wed, Fri).</li>
+<li>Then do one of these:<ul>
+<li><strong>Upload my plan (Excel / PDF / Word)</strong> — use the file you already have, in any layout (see <em>Making a checklist from your own file</em> below);</li>
+<li><strong>Paste a list</strong> — copy topics from anywhere, one per line, with &quot;Week 1&quot;, &quot;Week 2&quot; lines between weeks if you like;</li>
+<li><strong>Create empty plan</strong> and type topics in the app (click <strong>Edit</strong> on a session), or</li>
+<li><strong>Download Excel Template</strong>, fill the <strong>Topic</strong> column, and upload it.</li>
+</ul>
+</li>
+<li>After each lecture, click the <strong>✓ box</strong> beside the topic. You can also tick it on the Attendance page while marking.</li>
+</ol>
+<p><strong>Making a checklist from your own file</strong></p>
+<p>The app reads these layouts (and mixtures of them):</p>
+<table>
+<thead>
+<tr>
+<th>Your file looks like</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>One row per lecture</td>
+<td>Week · Date · Topic · Reading</td>
+</tr>
+<tr>
+<td>One row per week, a column per lecture</td>
+<td>Week · Lecture 1 · Lecture 2 · Lecture 3 (or Monday · Wednesday)</td>
+</tr>
+<tr>
+<td>One row per week, several topics in one cell</td>
+<td>Each topic on its own line, or separated by ;</td>
+</tr>
+<tr>
+<td>Plain text / PDF with headings</td>
+<td>&quot;Week 1&quot; then the topics under it</td>
+</tr>
+<tr>
+<td>Just a list of topics</td>
+<td>The app spreads them over your class days, skipping exam weeks</td>
+</tr>
+</tbody></table>
+<ol>
+<li>Click <strong>Upload My Plan</strong> (or <strong>Paste a List</strong>) and choose the file: .xlsx, .xls, .csv, .pdf, .docx or .txt.</li>
+<li>A preview opens with every row it found: week, date, type (lecture, revision, mid-term…), topic and details. Title rows, headings and page numbers are skipped.</li>
+<li>Check it. You can change any cell, delete a row (✕), or <strong>+ Add a row</strong>. If dates were not in your file, they are filled from the start date and class days; change those and click <strong>Re-arrange dates</strong>. Tick <em>Put each line of a cell as its own item</em> if a cell holds several topics. Mid-term/Final rows are added if your file has none.</li>
+<li>Choose <strong>Replace the current plan</strong> (ticks on topics with the same name are kept) or <strong>Add to the end</strong>, then click <strong>Create checklist</strong>.</li>
+</ol>
+<p>Scanned PDFs (photos of paper) have no text to read: use Word/Excel, or type the topics with <strong>Paste a List</strong>. Old .doc files: open in Word and <em>Save As</em> .docx first.</p>
+<p><strong>Add to Calendar</strong> downloads every class date, exam and deadline as a <code>.ics</code> file. On a phone, open it to add the dates to your calendar; on a computer, Google Calendar → ⚙ Settings → <strong>Import &amp; export</strong> → Import.</p>
+<p>The page shows a coverage ring, a &quot;planned vs covered&quot; graph, and a pace badge (<em>On track</em>, <em>2 behind</em>, <em>1 ahead</em>). Filters show <em>Not yet covered</em>, <em>Covered</em> or <em>This week</em>. <strong>Plan Settings</strong> changes dates and class days; tick <em>Re-calculate dates</em> to move every session (topics and ticks are kept). <strong>Print</strong> gives a clean printout of the plan.</p>
+<h3>Attendance</h3>
+<p><strong>Mark Attendance tab</strong></p>
+<ol>
+<li>Pick the course and date. Everyone starts on your default option (usually Present).</li>
+<li>Click a student&#39;s option to change it, or use <strong>All Present</strong> / <strong>All Absent</strong>.</li>
+<li>Tick the topics taught in this lecture (top panel); this updates the course coverage.</li>
+<li>Click <strong>Save Attendance</strong>. A second Save button is at the bottom for long classes on phones.</li>
+</ol>
+<p><strong>Clear This Day</strong> removes that date&#39;s attendance, for a cancelled class or a wrong date. Without internet, saving still works and syncs later.</p>
+<p><strong>Live Check-in</strong> lets students mark themselves present:</p>
+<ol>
+<li>Open the class for <strong>today</strong> and click <strong>Live Check-in</strong>.</li>
+<li>Choose how long the code lasts (2–10 minutes) and click <strong>Show Code</strong>. A <strong>QR code</strong> and a 6-digit code appear; show them on the projector.</li>
+<li>Students <strong>scan the QR code with their phone camera</strong> (it opens the app and checks them in — after signing in if needed), or open their dashboard → <strong>Class Check-in</strong>, pick the course, and type the code. The counter rises as they check in.</li>
+<li>Click <strong>Apply to Attendance</strong>. Checked-in students get your default option and everyone else is marked absent. Adjust anyone (e.g. Late or Leave), then click <strong>Save Attendance</strong>.</li>
+</ol>
+<p>The code expires quickly, so only students in the room can use it. <strong>New Code</strong> makes a fresh one, and <strong>Stop</strong> ends it early. Reopening Live Check-in during the same class continues where you left off.</p>
+<p><strong>Report &amp; Warnings tab:</strong> choose a course (or all) and a date range, then <strong>Run Report</strong>. Students below your threshold are flagged and get a WhatsApp button. <strong>Export Excel</strong> downloads the table.</p>
+<p><strong>Leave Requests tab:</strong> students ask for leave from <em>My Attendance</em> (dates, course or all courses, reason). The tab shows a count of requests waiting. Type an optional note to the student, then <strong>Approve</strong> or <strong>Reject</strong>. Approving changes any <em>Absent</em> marks already saved in those dates to <em>Leave</em>, and when you later mark attendance on those dates the student is already set to Leave (shown with an &quot;Approved leave&quot; tag). <strong>Undo</strong> moves a request back to waiting; marks already changed stay as they are. The dashboard shows a banner when requests are waiting.</p>
+<p><strong>Monthly Excel Upload tab:</strong> pick a course and month, then <strong>Download Template</strong>. It has one column per class day, taken from your course plan, with existing marks filled in. Type your codes (P, A, L…), save, and <strong>Upload Filled Template</strong>. Blank cells are ignored.</p>
+<h3>Students</h3>
+<ul>
+<li><strong>+ Add Student</strong> creates the student and their login together. Click <strong>Generate</strong> for a password and note it down; you can always see it later with <strong>Show</strong>.</li>
+<li><strong>Edit</strong> changes details or the password. <strong>Profile</strong> shows everything about one student, including a result card link.</li>
+<li><strong>Enrolled Courses:</strong> click course chips or type codes separated by commas. A student appears on a course&#39;s roster only when its code is here.</li>
+<li><strong>Status:</strong> <em>Inactive</em> or <em>Graduated</em> students disappear from new rosters but keep their history.</li>
+<li><strong>Import / Export Excel:</strong> use <code>docs/sample-students.xlsx</code> as the layout. Existing roll numbers are skipped, never overwritten.</li>
+<li><strong>Filters:</strong> search box, course, and status.</li>
+</ul>
+<h3>Courses</h3>
+<ul>
+<li><strong>+ Add Course:</strong> code (cannot be changed later), term, subject, class, credit hours, semester, section, teacher, reference books.</li>
+<li>The list shows how many students are enrolled and how much of the plan is covered.</li>
+<li><strong>Delete</strong> offers to clean up the course&#39;s attendance, marks, quizzes, plan and files. Back up first if you might need them.</li>
+</ul>
+<h3>Assignments, Quizzes &amp; Tasks, Presentations, Internal Exams</h3>
+<p>All four work the same way:</p>
+<ol>
+<li><strong>+ New…</strong> → title, course, date, total marks, assign to the whole class or selected students. Untick <strong>Count this in the gradebook</strong> for practice work.</li>
+<li>Click <strong>Marks</strong> to enter marks and remarks. You can also <strong>Download Template</strong> → fill in Excel → <strong>Upload Filled Marks</strong>. Live average/highest/lowest are shown; marks above the total are blocked.</li>
+</ol>
+<p>Extra options:</p>
+<ul>
+<li><strong>Assignments:</strong> description, instructions, an attachment link, and <strong>Students submit their work online</strong>. With that ticked, students paste a Google Drive link before the due date. The Marks grid shows each submission with an <strong>On time</strong> or <strong>Late</strong> label.</li>
+<li><strong>Presentations:</strong> each student gets a topic and a status (from your list in Settings).</li>
+<li><strong>Tasks:</strong> marks are optional.</li>
+<li><strong>Internal Exams</strong> (on the Exams &amp; Gradebook page): the exam name comes from your list in Settings.</li>
+</ul>
+<h3>Online Quizzes</h3>
+<p>See section 7.</p>
+<h3>Exams &amp; Gradebook</h3>
+<ol>
+<li>Choose a course and click <strong>Run Gradebook</strong>. Optionally limit it to a date range, e.g. only up to the midterm.</li>
+<li>Check the <strong>weightage</strong>. It must total 100; set any component to 0 to not charge it. <strong>Save for this Course</strong> keeps a course-specific weightage; <strong>Reset to Default</strong> goes back to Settings.</li>
+<li>The table shows each component %, <em>earned / possible</em> marks so far, total %, grade and grade points. <strong>Bonus</strong> and <strong>Neg.</strong> are extra percentage points you type directly into the table.</li>
+<li>A summary card shows class average, highest, lowest and passing count, plus a grade distribution chart.</li>
+<li>Use <strong>Export Excel</strong>, <strong>Print</strong>, or the green <strong>Send</strong> button to WhatsApp a student their result.</li>
+</ol>
+<h3>Announcements</h3>
+<p>Post a title and message to everyone or to one course. Students see it on their dashboard. Tick <em>Also open WhatsApp</em> to forward it to your class group in one tap.</p>
+<h3>Course Content</h3>
+<p>Add lecture notes, slides, past papers or videos in one of two ways (switch with <strong>Upload a file / Add a link</strong>):</p>
+<p><strong>Upload a file (PDF, Word, PowerPoint, images — up to 10 MB each)</strong></p>
+<ol>
+<li>Choose the course and category.</li>
+<li>Click the box (or drag the file onto it) and pick the file. The name students see is filled in; change it if you like.</li>
+<li>Click <strong>Upload</strong>. A bar shows progress.</li>
+</ol>
+<p>Students open PDFs inside the app in a reader with zoom (+/−) and <strong>Download</strong>; it works on phones and in the Android app. Other file types download to open in their own app. The line under the box shows how much free file space is used (about 900 MB in total). If a PDF is bigger than 10 MB, compress it for free (ilovepdf.com → Compress PDF) or use a link.</p>
+<p><strong>Add a link</strong> (Google Drive, YouTube or any https link)</p>
+<ol>
+<li>Upload the file to Google Drive → <strong>Share → Anyone with the link → Copy link</strong>.</li>
+<li>Paste it with a name and category, and click <strong>Add Link</strong>.</li>
+</ol>
+<p>Google Drive files open inside the app too. Students see only files for their courses. The <strong>Ebook Library</strong> tab is shared with all students and also accepts a PDF file or a link. <strong>Remove</strong> deletes an uploaded file from the app (keep your own copy); for a link, the file in your Drive stays safe.</p>
+<h3>Reports</h3>
+<ol>
+<li>Pick a report card.</li>
+<li>Set the filters: term, course, student, assessment type, dates.</li>
+<li>Click <strong>Generate Report</strong>.</li>
+<li>Download <strong>Excel</strong> or <strong>CSV</strong>, or <strong>Print / Save PDF</strong>.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Report</th>
+<th>Use it for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Attendance Summary</td>
+<td>Counts per option and % per student per course</td>
+</tr>
+<tr>
+<td>Daily Attendance Log</td>
+<td>A students × dates grid with codes, colour-coded</td>
+</tr>
+<tr>
+<td>Result Sheet</td>
+<td>Final weighted result, grades, GP, pass/fail for one course</td>
+</tr>
+<tr>
+<td>Marks Detail</td>
+<td>Every assessment mark, one column per item</td>
+</tr>
+<tr>
+<td>Course Coverage</td>
+<td>Plan progress for every course, or session-by-session for one</td>
+</tr>
+<tr>
+<td>At-Risk Students</td>
+<td>Low attendance or below the pass mark, with WhatsApp buttons</td>
+</tr>
+<tr>
+<td>Student Result Card</td>
+<td>A printable card for one student with all courses and GPA</td>
+</tr>
+<tr>
+<td>Presentations</td>
+<td>Topic, status, marks per round</td>
+</tr>
+<tr>
+<td>Student List / Course List</td>
+<td>Rosters and course details</td>
+</tr>
+</tbody></table>
+<h3>Backup</h3>
+<ul>
+<li><strong>Download Backup (.json)</strong> is the exact copy, best for restoring. Tick <strong>Include uploaded PDFs/files</strong> to put your uploaded files inside it too (the backup becomes bigger, about 1.4× the size of the files). Without the tick, the backup has the file list but not the files. <strong>(Excel)</strong> opens in Excel, with one tab per collection.</li>
+<li><strong>Restore</strong> merges a backup back in: matching records are overwritten and nothing else is deleted.</li>
+<li><strong>Reset All Data</strong> deletes everything except your settings and admin login. You must type <code>DELETE ALL DATA</code>.</li>
+</ul>
+<p>Backups contain student passwords; keep them private.</p>
+<h3>Change History</h3>
+<p>Every change you make is recorded: attendance marked or changed (with each student&#39;s <em>before → after</em>), marks and bonus changes, settings saved, students added or deleted, course plans imported, files added or removed, leave decisions, quiz results published, restores and resets. Search by roll number or course, filter by type, and <strong>Export Excel</strong>. Entries cannot be edited. Use <strong>Delete entries older than 1 year</strong> to save space; each entry is tiny.</p>
+<h2>6. Settings, option by option</h2>
+<p>Every rule the app uses lives here. Click <strong>Save Settings</strong> at the bottom after changing anything. Changes apply everywhere immediately: attendance %, gradebook, reports, warnings and student pages.</p>
+<h3>General</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Your name, Department, Institution</td>
+<td>Printed on reports, result cards, plans and WhatsApp messages</td>
+</tr>
+<tr>
+<td>Active term</td>
+<td>Dashboards and course pickers show only that term&#39;s courses (courses with no term always show). Leave blank to show everything.</td>
+</tr>
+</tbody></table>
+<h3>Attendance Options (your own buttons)</h3>
+<p>Each row is one button on the Attendance page.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>On</td>
+<td>Unticked = hidden when marking. Records already marked with it are kept and still counted.</td>
+</tr>
+<tr>
+<td>Name</td>
+<td>What the button says (e.g. <em>Medical</em>)</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>What you type in the monthly Excel sheet (e.g. <em>M</em>). Codes must all be different.</td>
+</tr>
+<tr>
+<td>Counts as</td>
+<td><em>Counts as present</em>, <em>Counts as half</em>, <em>Counts as absent</em>, or <em>Not counted</em> (removes that class from the total, so it neither helps nor hurts)</td>
+</tr>
+<tr>
+<td>Colour</td>
+<td>Button and report colour</td>
+</tr>
+<tr>
+<td>Default</td>
+<td>Pre-selected for every student when you open a class</td>
+</tr>
+<tr>
+<td>Order ↑ ↓</td>
+<td>Button order</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>Add an attendance option</strong> creates your own, e.g. <em>Medical — M — Not counted</em> or <em>Official duty — OD — Counts as present</em>.</li>
+<li>Built-in options (Present, Absent, Leave, Late, Excused) can be renamed or switched off but not deleted.</li>
+<li>Your own options can be deleted. Switching off is safer, because records already marked with a deleted option show its raw name and stop counting.</li>
+</ul>
+<p>Other attendance settings:</p>
+<ul>
+<li><strong>Warning below (%):</strong> the threshold for warnings, the dashboard and the At-Risk report.</li>
+<li><strong>Attendance marks in gradebook:</strong><ul>
+<li><em>Proportional:</em> 80% attendance earns 80% of the attendance weight.</li>
+<li><em>Bands:</em> fixed scores per range, e.g. ≥90% → 100, ≥80% → 80. Highest matching band wins.</li>
+</ul>
+</li>
+</ul>
+<h3>Gradebook Rules</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Choices</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Default weightage</td>
+<td>Used by courses without their own. <em>Apply to ALL courses</em> makes every course use it.</td>
+</tr>
+<tr>
+<td>Components with no marks yet</td>
+<td><em>Leave out &amp; rescale</em> (fair during the semester) or <em>Count as zero</em> (strict, for final results)</td>
+</tr>
+<tr>
+<td>Blank mark for a student</td>
+<td><em>Ignore</em> (not graded yet) or <em>Zero once the due date has passed</em></td>
+</tr>
+<tr>
+<td>Combine several items by</td>
+<td><em>Average of percentages</em> (each quiz equal) or <em>Total marks</em> (bigger items count more)</td>
+</tr>
+<tr>
+<td>Pass mark, Decimal places</td>
+<td>As named</td>
+</tr>
+<tr>
+<td>Students can see their running total</td>
+<td>Shows a live total and grade on the student&#39;s Marks page</td>
+</tr>
+<tr>
+<td>Drop Lowest</td>
+<td>e.g. drop each student&#39;s lowest 1 quiz (only when they have more than one)</td>
+</tr>
+<tr>
+<td>Grading Scale</td>
+<td>Minimum % for each letter grade and its grade points (used for GPA). Must include a row starting at 0.</td>
+</tr>
+</tbody></table>
+<h3>WhatsApp Messages</h3>
+<p>Set the country code (92 for Pakistan) and the text of the warning and result messages. You can use these placeholders: <code>{name}</code> <code>{roll}</code> <code>{course}</code> <code>{pct}</code> <code>{threshold}</code> <code>{total}</code> <code>{grade}</code> <code>{teacher}</code>. Nothing is sent automatically; the button opens WhatsApp with the message ready.</p>
+<h3>Your Lists</h3>
+<p>Type one item per line:</p>
+<ul>
+<li>internal exam names;</li>
+<li>course file categories;</li>
+<li>presentation statuses.</li>
+</ul>
+<p>Changing a list never changes records already saved.</p>
+<h3>Online Quiz Defaults</h3>
+<p>These are the starting values for each new quiz, and each quiz can still be changed on its own:</p>
+<ul>
+<li>time limit;</li>
+<li>negative marking;</li>
+<li>shuffle questions and options;</li>
+<li>whether students see the correct answers.</li>
+</ul>
+<h3>Course Plan Defaults</h3>
+<p>Usual weeks, mid-term week, final week and class days, pre-filled when you create a plan.</p>
+<h3>Maintenance</h3>
+<p>One-time upgrades appear here (e.g. the version 2 attendance upgrade). They never delete anything except through a separate, clearly-labelled button.</p>
+<h2>7. Online quizzes</h2>
+<p>Students take a timed quiz on their phones. The app marks it, puts the marks in the gradebook, and can show each student their answers.</p>
+<h3>Build a quiz</h3>
+<ol>
+<li><strong>Online Quizzes → + New Online Quiz</strong> (title, course, date). Or click <strong>Make online</strong> next to any quiz on the Quizzes &amp; Tasks page.</li>
+<li>Add questions in either of two ways:<ul>
+<li><strong>One by one:</strong> pick a type → <strong>+ Add Question</strong>, type the question, fill the options, tick the correct one(s), and set marks.</li>
+<li><strong>From Excel (fastest):</strong> click <strong>Excel Template</strong>, fill one row per question, then <strong>Import from Excel</strong>. Choose OK to replace or Cancel to add.</li>
+</ul>
+</li>
+<li>Click <strong>Save Questions</strong>. The total marks update automatically.</li>
+<li>Click <strong>Preview as Student</strong> to check it.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Excel &quot;Correct&quot; column</th>
+<th>Marked as</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MCQ (one correct)</td>
+<td>One letter, e.g. <code>B</code></td>
+<td>Right or wrong</td>
+</tr>
+<tr>
+<td>Multiple correct</td>
+<td>Letters with commas, e.g. <code>A,C</code></td>
+<td>Right only if exactly those are chosen</td>
+</tr>
+<tr>
+<td>True / False</td>
+<td><code>True</code> or <code>False</code></td>
+<td>Right or wrong</td>
+</tr>
+<tr>
+<td>Short answer</td>
+<td>Accepted answers separated by `</td>
+<td><code>, e.g. </code>Net Present Value</td>
+</tr>
+</tbody></table>
+<h3>Quiz Settings tab</h3>
+<ul>
+<li><strong>Time limit (minutes).</strong> Each student&#39;s clock starts when they press Start.</li>
+<li><strong>Opens at / Closes at</strong> (optional). Students can only start inside this window.</li>
+<li><strong>Negative marking:</strong> none, ¼, ⅓, ½ or full marks lost per wrong answer. Unanswered questions lose nothing, and a total never goes below 0.</li>
+<li><strong>Shuffle questions / options.</strong> Each student gets a different but fixed order, so neighbours see different screens.</li>
+<li><strong>Show correct answers</strong> when results are published, or the score only.</li>
+</ul>
+<h3>Run it</h3>
+<ol>
+<li>Click <strong>Open Quiz Now</strong>. Students see it under <strong>Online Quizzes</strong> and as a green banner on their dashboard.</li>
+<li>Students get one attempt. Answers save automatically every few seconds, so a dropped connection is fine: they reopen and continue. When time runs out, the saved answers are submitted.</li>
+<li>Watch <strong>Results &amp; Marking</strong>: who has started or submitted, time taken, how often they left the quiz screen, and the score.</li>
+<li>Click <strong>Close Quiz</strong> when done. Students who are already inside can finish their own time.</li>
+</ol>
+<h3>Mark and publish</h3>
+<ol>
+<li>On <strong>Results &amp; Marking</strong>, optionally tick <strong>Give 0 to students who did not attempt</strong>.</li>
+<li><strong>Save Marks to Gradebook</strong> writes every score as that quiz&#39;s marks. They appear in the gradebook and reports.</li>
+<li><strong>Publish Results to Students</strong> saves marks, closes the quiz, and lets students see their score and (if allowed) the correct answers. <strong>Hide Results</strong> undoes this.</li>
+<li><strong>Question Analysis</strong> shows the % who got each question right. Red questions (under 40%) are worth re-teaching, or checking the answer key.</li>
+<li><strong>Answers</strong> shows one student&#39;s paper; <strong>Reset</strong> deletes an attempt so the student can retake it (e.g. after a phone problem).</li>
+</ol>
+<h3>How answers stay safe</h3>
+<ul>
+<li>The answer key is stored where only you can read it.</li>
+<li>Questions are hidden from students until you open the quiz.</li>
+<li>Start and submit times come from Google&#39;s server clock, so a student cannot change their phone&#39;s time to get more minutes.</li>
+</ul>
+<h2>8. Student portal guide (share this with students)</h2>
+<ol>
+<li><strong>Sign in.</strong> Open the class website or app → <strong>Student</strong> tab → your roll number (e.g. <code>BSF-23-014</code>) and the password your lecturer gave you.</li>
+<li><strong>Change your password:</strong> <strong>My Account → Change My Password</strong>. You need your current password.</li>
+<li><strong>Dashboard:</strong><ul>
+<li>green banners for quizzes open now;</li>
+<li><strong>Class Check-in</strong> (type the code shown in class);</li>
+<li>your overall attendance;</li>
+<li>each course&#39;s progress ring and attendance bar;</li>
+<li>deadlines and announcements.</li>
+</ul>
+</li>
+<li><strong>Class Check-in:</strong> <strong>scan the QR code</strong> on the board with your phone camera and open the link — you are checked in (sign in first if asked; it finishes by itself). Or choose the course, type the 6-digit code, and tap <strong>Check in</strong> during the time your lecturer allows. &quot;Wrong or expired&quot; means the code is mistyped, expired, or you already checked in.</li>
+<li><strong>Course Progress:</strong> what has been taught each week, what&#39;s next, and when exams are. <strong>Add classes &amp; deadlines to my calendar</strong> saves a calendar file — open it on your phone to add every class, exam and deadline.</li>
+<li><strong>Attendance:</strong> your % per course, counts per option, and every day&#39;s record. If you are below the required %, it tells you how many classes in a row you need to recover. <strong>Request Leave:</strong> pick the course (or all), the dates and the reason, then <strong>Send Request</strong>. <em>My Leave Requests</em> shows Waiting / Approved / Not approved and your lecturer&#39;s note; you can <strong>Withdraw</strong> a request while it is waiting.</li>
+<li><strong>Online Quizzes:</strong><ul>
+<li>Tap <strong>Start quiz</strong> only when ready; the timer does not stop.</li>
+<li>Answers save automatically. If your internet drops, reopen the quiz and tap <strong>Continue</strong>.</li>
+<li>Tap <strong>Submit quiz</strong> when done; you cannot change answers afterwards.</li>
+<li>Leaving the quiz screen is recorded.</li>
+<li>After your lecturer publishes results, tap <strong>View result</strong> to see your score and the correct answers.</li>
+</ul>
+</li>
+<li><strong>Assignments:</strong> read the instructions. If online submission is on:<ol>
+<li>Upload your file to Google Drive → <strong>Share → Anyone with the link → Copy link</strong>.</li>
+<li>Paste the link → <strong>Submit</strong>.</li>
+<li>You can update it later; the latest time is what your lecturer sees, and after the due date it shows as <strong>Late</strong>.</li>
+</ol>
+</li>
+<li><strong>Marks &amp; Result:</strong> every mark with remarks. Your running total appears too if your lecturer has turned it on.</li>
+<li><strong>Course Content / Announcements:</strong> files for your courses, the ebook library, and messages from your lecturer. PDFs open inside the app — use <strong>+ / −</strong> to zoom and <strong>Download</strong> to keep a copy. Once opened, a PDF opens again without using more internet.</li>
+<li><strong>Install on your phone:</strong> open the website in Chrome → <strong>⋮ → Add to Home screen</strong>.</li>
+</ol>
+<h2>9. How marks, attendance and coverage are calculated</h2>
+<p><strong>Attendance %.</strong> Classes counted are those whose option is not &quot;Not counted&quot;:</p>
+<p><strong>Attendance % = (present + 0.5 × half) ÷ classes counted × 100</strong></p>
+<p><strong>Each assessment type</strong> (quizzes, assignments, presentations, tasks, internal exams) works like this:</p>
+<ul>
+<li>Only items with &quot;Count in gradebook&quot; ticked and a total above 0 are used, inside the chosen date range.</li>
+<li>Each student&#39;s lowest N are dropped if set.</li>
+<li>The rest are combined by average of percentages, or total marks, as chosen in Settings.</li>
+</ul>
+<p><strong>Weighted total.</strong> With <em>Leave out &amp; rescale</em>, only components that already have marks are used:</p>
+<p><strong>Total % = Σ(weight × component %) ÷ Σ(weights of components with marks) + bonus − negative</strong></p>
+<p>With <em>Count as zero</em>, the bottom of that fraction is always 100. The total is kept between 0 and 100, then the grading scale gives the letter and grade points.</p>
+<p><strong>GPA</strong> on the result card is the credit-hour weighted average of grade points.</p>
+<p><strong>Course coverage</strong> = lectures and revisions ticked ÷ all lectures and revisions in the plan. Exams and holidays are left out. <em>Pace</em> compares ticks with the number of lectures planned up to today.</p>
+<p><strong>Online quiz score</strong> = sum of marks for right answers − (negative fraction × marks) for wrong answers, never below 0.</p>
+<h2>10. Backup and safety routine</h2>
+<table>
+<thead>
+<tr>
+<th>When</th>
+<th>Do this</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Every 2 weeks (the dashboard reminds you)</td>
+<td>Backup → Download Backup (.json) → save to Google Drive</td>
+</tr>
+<tr>
+<td>Before every update or big import</td>
+<td>Same, plus the Excel backup</td>
+</tr>
+<tr>
+<td>End of each semester</td>
+<td>Excel backup + export each course&#39;s Result Sheet and Daily Attendance Log; keep them with your records</td>
+</tr>
+<tr>
+<td>Always</td>
+<td>Keep backups, <code>signing.keystore</code> and <code>signing-key-info.txt</code> private</td>
+</tr>
+</tbody></table>
+<p>To recover from a mistake, go to <strong>Backup → Restore from File</strong> and choose the latest .json file. This puts back the records in the file and leaves everything else as it is.</p>
+<h2>11. Troubleshooting: errors and fixes</h2>
+<table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>Why</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Missing or insufficient permissions&quot;</td>
+<td>The security rules on Firebase are older than the app</td>
+<td>Firebase Console → Firestore → Rules → paste <code>docs/firestore.rules</code> → Publish. Wait 1 minute, reload.</td>
+</tr>
+<tr>
+<td>&quot;Incorrect credentials&quot; at sign-in</td>
+<td>Wrong password, or the admin/student tab is wrong</td>
+<td>Check the tab. Admin: reset the password in Firebase → Authentication → Users → ⋮ → Reset password. Student: Students → Edit → Change Password.</td>
+</tr>
+<tr>
+<td>&quot;This account is not registered as an administrator&quot;</td>
+<td>The <code>admins</code> document is missing or has the wrong UID</td>
+<td>Firestore → <code>admins</code> → the document ID must be exactly the User UID from Authentication</td>
+</tr>
+<tr>
+<td>&quot;This account is not linked to a student record&quot;</td>
+<td>The student record was deleted or re-created</td>
+<td>Delete and re-add the student, or check their <code>authUid</code> matches the login&#39;s UID</td>
+</tr>
+<tr>
+<td>Re-adding a deleted roll number fails</td>
+<td>The old login still exists in Authentication</td>
+<td>Usually handled automatically. If not: Firebase → Authentication → find the old login → Delete, then re-add.</td>
+</tr>
+<tr>
+<td>Page stuck on &quot;Loading…&quot; or blank</td>
+<td>Old cached version, or no internet on first visit</td>
+<td>Press Ctrl+F5 (phone: close and reopen). Check the address and your internet.</td>
+</tr>
+<tr>
+<td>New version not showing after upload</td>
+<td>GitHub Pages still publishing, or browser cache</td>
+<td>Wait 2 minutes; check the repository&#39;s <strong>Actions</strong> tab shows a green tick; then Ctrl+F5</td>
+</tr>
+<tr>
+<td>Sidebar says &quot;Offline — changes will sync&quot;</td>
+<td>No internet</td>
+<td>Keep working; saves upload when you reconnect. Don&#39;t clear browser data while offline.</td>
+</tr>
+<tr>
+<td>&quot;Quota exceeded&quot; / &quot;resource-exhausted&quot;</td>
+<td>The free daily limit was reached (50,000 reads or 20,000 writes per day)</td>
+<td>Wait until the next day (resets at about 12:00–13:00 Pakistan time). Avoid repeatedly re-running big reports.</td>
+</tr>
+<tr>
+<td>Excel import says rows failed</td>
+<td>Missing required columns, or wrong codes</td>
+<td>Use the templates from the app; check the message, which lists each failed row</td>
+</tr>
+<tr>
+<td>Attendance % looks different from before</td>
+<td>Your Settings decide what counts (e.g. Leave = Not counted)</td>
+<td>Settings → Attendance Options → Counts as</td>
+</tr>
+<tr>
+<td>A student can&#39;t see a course&#39;s files or quizzes</td>
+<td>The course code is missing from their Enrolled Courses</td>
+<td>Students → Edit → add the course code</td>
+</tr>
+<tr>
+<td>WhatsApp button is grey</td>
+<td>No phone number on file</td>
+<td>Students → Edit → Phone</td>
+</tr>
+<tr>
+<td>A Drive link won&#39;t open for students</td>
+<td>The file isn&#39;t shared publicly</td>
+<td>In Drive: Share → General access → Anyone with the link</td>
+</tr>
+<tr>
+<td>Student: &quot;That code is wrong, has expired…&quot; (check-in)</td>
+<td>Typo, expired code, wrong course selected, or already checked in</td>
+<td>Check the course and code. The lecturer can press New Code.</td>
+</tr>
+<tr>
+<td>Student can&#39;t start a quiz</td>
+<td>The quiz isn&#39;t open, is outside its window, or the student already submitted</td>
+<td>Online Quizzes → open the quiz → check status and times; <strong>Reset</strong> the attempt if a retake is fair</td>
+</tr>
+<tr>
+<td>A student&#39;s quiz shows &quot;Time over&quot;</td>
+<td>Time ran out before they pressed Submit</td>
+<td>Their saved answers are marked normally — nothing to do</td>
+</tr>
+<tr>
+<td>Phone app shows a URL bar at the top</td>
+<td>The Digital Asset Links file isn&#39;t published at the site root</td>
+<td>Optional; the app still works. The PWABuilder docs explain <code>assetlinks.json</code>.</td>
+</tr>
+<tr>
+<td>&quot;The limit is 10 MB&quot; when uploading</td>
+<td>The file is too big for one upload</td>
+<td>Compress it free at ilovepdf.com → Compress PDF, split it into parts, or add it as a Google Drive link</td>
+</tr>
+<tr>
+<td>&quot;The free storage space is full&quot;</td>
+<td>Uploaded files reached about 900 MB</td>
+<td>Remove old files (Course Content → Remove), or use Drive links for big files</td>
+</tr>
+<tr>
+<td>Plan import: &quot;no text could be read&quot; / few topics found</td>
+<td>Scanned PDF (a photo), or an unusual layout</td>
+<td>Use the Word/Excel version, or <strong>Paste a List</strong>; fix rows in the preview before saving</td>
+</tr>
+<tr>
+<td>Plan import put topics in the wrong weeks</td>
+<td>The file had no week numbers or dates</td>
+<td>In the preview, type the weeks, or set the start date and class days and press <strong>Re-arrange dates</strong></td>
+</tr>
+<tr>
+<td>&quot;.doc files can&#39;t be read&quot;</td>
+<td>Old Word format</td>
+<td>Open it in Word → Save As → .docx</td>
+</tr>
+<tr>
+<td>QR scan opens the website but asks to sign in</td>
+<td>The phone&#39;s browser isn&#39;t signed in</td>
+<td>Sign in once; the check-in then finishes by itself (within 15 minutes of scanning)</td>
+</tr>
+<tr>
+<td>Leave requests / Change History say &quot;permission&quot;</td>
+<td>v4 security rules not published</td>
+<td>Publish <code>docs/firestore.rules</code> (section 3, step 4)</td>
+</tr>
+<tr>
+<td>PDF says &quot;could not be shown here&quot;</td>
+<td>The file is damaged or protected</td>
+<td>Use <strong>Download</strong> to open it on the device, or upload a fresh copy</td>
+</tr>
+<tr>
+<td>Something else</td>
+<td>—</td>
+<td>Note the exact message, the page, and the time. Export a backup before trying fixes.</td>
+</tr>
+</tbody></table>
+<h2>12. Free-plan limits, glossary and quick reference</h2>
+<h3>Everything is free</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>What it&#39;s used for</th>
+<th>Free limit</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Firebase Firestore (Spark)</td>
+<td>All data, uploaded PDFs, change history</td>
+<td>1 GB storage, 50,000 reads + 20,000 writes per day</td>
+<td>Free, no card</td>
+</tr>
+<tr>
+<td>Firebase Authentication</td>
+<td>Logins</td>
+<td>Email/password sign-in for normal class sizes</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>GitHub Pages</td>
+<td>The website</td>
+<td>1 GB site, 100 GB traffic per month</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>Google Drive</td>
+<td>Files, ebooks, submissions</td>
+<td>15 GB per Google account</td>
+<td>Free</td>
+</tr>
+<tr>
+<td>WhatsApp links, PWABuilder, SheetJS, pdf.js, JSZip, Google Fonts</td>
+<td>Messages, APK, Excel, PDF reader, Word reader, fonts</td>
+<td>—</td>
+<td>Free (open source, bundled in the app)</td>
+</tr>
+</tbody></table>
+<p>A class of 300 students using the app every day stays well inside these limits.</p>
+<p><strong>Uploaded files and the free limits.</strong> Each PDF is stored in pieces of 900 KB, so a 3 MB PDF is 4 pieces: uploading it costs 4 writes and each student&#39;s first opening costs 4 reads (re-opening on the same phone is free — it is kept on the device). 150 students opening one 3 MB PDF = 600 reads, about 1% of the daily 50,000. Files share the 1 GB with your data; the app stops uploads at 900 MB so your records always have room. Big videos or many large books → use Google Drive links instead.</p>
+<h3>Glossary</h3>
+<table>
+<thead>
+<tr>
+<th>Word</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Active term</td>
+<td>The term whose courses are shown by default</td>
+</tr>
+<tr>
+<td>Roster</td>
+<td>The active students enrolled in a course</td>
+</tr>
+<tr>
+<td>Weightage</td>
+<td>How many of the 100 marks each component carries</td>
+</tr>
+<tr>
+<td>Rescale</td>
+<td>Ignore components with no marks yet, so early totals are fair</td>
+</tr>
+<tr>
+<td>Course plan / session</td>
+<td>The week-by-week list of lectures; one row = one session</td>
+</tr>
+<tr>
+<td>Coverage / pace</td>
+<td>How much of the plan is taught / ahead or behind the plan</td>
+</tr>
+<tr>
+<td>Check-in code</td>
+<td>A 6-digit code shown in class that students type to mark themselves present</td>
+</tr>
+<tr>
+<td>Publish (quiz)</td>
+<td>Let students see their quiz score and answers</td>
+</tr>
+<tr>
+<td>Firestore rules</td>
+<td>The security file that decides who can read or change what</td>
+</tr>
+<tr>
+<td>Service worker</td>
+<td>The part that makes the app open offline (<code>sw.js</code>)</td>
+</tr>
+</tbody></table>
+<h3>Quick reference</h3>
+<table>
+<thead>
+<tr>
+<th>I want to…</th>
+<th>Go to</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Take attendance</td>
+<td>Attendance → course + date → mark → Save (or Live Check-in)</td>
+</tr>
+<tr>
+<td>Tick today&#39;s topic</td>
+<td>Attendance (topics panel) or Course Plans → ✓</td>
+</tr>
+<tr>
+<td>Run a quiz</td>
+<td>Online Quizzes → New → questions → Open → later Close → Publish</td>
+</tr>
+<tr>
+<td>Collect assignments online</td>
+<td>Assignments → Edit → tick &quot;Students submit online&quot;</td>
+</tr>
+<tr>
+<td>Enter marks</td>
+<td>Assignments / Quizzes / Presentations / Exams → Marks</td>
+</tr>
+<tr>
+<td>See final results</td>
+<td>Exams &amp; Gradebook → Run Gradebook</td>
+</tr>
+<tr>
+<td>Print a result card</td>
+<td>Reports → Student Result Card, or a student&#39;s Profile</td>
+</tr>
+<tr>
+<td>Warn a student</td>
+<td>Dashboard / Attendance report / At-Risk report → WhatsApp</td>
+</tr>
+<tr>
+<td>Add or hide an attendance option</td>
+<td>Settings → Attendance Options</td>
+</tr>
+<tr>
+<td>Back up</td>
+<td>Backup → Download Backup (.json)</td>
+</tr>
+<tr>
+<td>Update the app</td>
+<td>Section 3 of this guide</td>
+</tr>
+</tbody></table>
+</article>
+      <nav class="guide-toc no-print" id="guide-toc"></nav>
+    </div>
+  </main>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/help.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

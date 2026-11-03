@@ -1,450 +1,197 @@
-# Sanaullah's Classroom — Complete
+# Sanaullah's Classroom — Version 4
 
-**Status:** All planned modules are built: Auth, Students, Courses,
-Attendance (with a monthly bulk-upload template), the full Gradebook
-system (with bulk mark upload on Assignments/Presentations/Quizzes/Tasks/
-Exams), Announcements, Course Content/Ebook Library (via Google Drive
-links), Reports, and Backup/Restore (including a one-click full data reset).
+**The complete step-by-step guide is in `docs/USER_GUIDE.md`, and inside the app under Help & Guide.** It covers setup, updates, every page and setting, and troubleshooting.
 
-Everything here runs on Firebase's free **Spark** plan. Nothing requires
-Cloud Functions or the paid Blaze plan.
+## ⬆️ Upgrading from version 3 (5 minutes, no data changes)
 
-## ⚠️ IMPORTANT — the setup file changed. Read this before anything else.
+1. **Back up.** Backup → Download Backup (.json), and save it to Google Drive.
+2. **Upload everything** in this folder to your GitHub repository, replacing the old files (including the new `js/vendor/` folder and `history.html`). `js/firebase-keys.js` already has your keys.
+3. **Publish the new rules.** Firebase Console → Firestore → Rules → paste `docs/firestore.rules` → **Publish**. This is required: PDF upload, leave requests and Change History are blocked until you do.
+4. **Reload.** Wait 2 minutes, then press Ctrl+F5. On phones, close and reopen the app.
 
-Two rounds of bugs came from the same root problem: you were asked to
-paste your Firebase keys into a file that *also* contained app logic, so
-each update risked overwriting logic fixes with an older copy of that file.
-**That's fixed now, permanently:**
+Nothing is converted or deleted. Coming from version 2? Follow these same four steps; the v3 notes below are included.
 
-- **`js/firebase-keys.js`** — a brand new, tiny file containing ONLY your
-  5 Firebase values. **This is the only file you will ever need to edit,
-  from now on, forever.**
-- **`js/firebase-config.js`** — now contains ONLY logic, no keys. You never
-  need to open this file again.
+## What's new in version 4
 
-### What to do right now
+- **Upload PDFs directly** (Course Content and Ebook Library): pick or drag a file, up to 10 MB each. Students open it in a built-in reader that works on phones and in the Android app, with zoom and download. Still free: files are kept inside your free database, and a meter shows how much of the free space is used (about 900 MB for files). Google Drive links still work, and now open in the same reader.
+- **Course plan from your own file:** upload your plan as **Excel, PDF or Word** in whatever layout you already use, or paste a list. The app finds weeks, dates and topics, shows them in an editable preview, adds mid-term and final rows if missing, and makes a tick-list checklist. Re-uploading keeps the ticks of topics you already covered.
+- **QR check-in:** the Live Check-in screen now shows a QR code. Students scan it with their phone camera and are checked in automatically after signing in.
+- **Online leave requests:** students request leave from My Attendance; you approve or reject on Attendance → Leave Requests. Approving turns their Absent marks in those dates into Leave, and pre-sets Leave on the marking screen.
+- **Add to Calendar:** download every class date, exam and deadline as a calendar file for Google Calendar or your phone (students have the same button on Course Progress).
+- **Change History:** every change to marks, attendance, settings, students, plans and files is recorded with before → after values.
+- **Backup with files:** the .json backup can include uploaded PDFs, so a restore brings them back too.
 
-1. Open `js/firebase-keys.js` (not `firebase-config.js` — that's a
-   different, new file) and paste your 5 Firebase values into it, exactly
-   like before.
-2. Re-publish `docs/firestore.rules` in Firebase Console → Firestore
-   Database → Rules → Publish (unchanged step from before, still needed).
-3. Go to **Backup** → **Reset All Data**, type `DELETE ALL DATA`, confirm.
-   This really does clear everything — if an import still says "already
-   exists" afterward, check the Firestore Console directly under the
-   `students` collection to confirm it's empty; if it somehow isn't, that's
-   worth reporting back specifically, since it would point to something
-   deeper than what's described here.
-4. Re-upload every file in your `lms` folder to GitHub (the new
-   `firebase-keys.js` file needs to be uploaded too — it doesn't exist in
-   your repo yet).
-5. Also fixed: the sample student template had a stray instructional row
-   that was accidentally being read as a fake student record during import
-   (visible as "generateUniqueStudentEmail is not defined" noise mixed into
-   real errors). That row is gone — instructions now live on a separate
-   "Instructions" tab in the spreadsheet that's never read during import.
+## Version 3 features
 
-## What was fixed in this update
+- **Online quizzes:** MCQ, multiple-correct, true/false and short-answer questions, typed in or imported from Excel. Each quiz has a timer, an optional opening window, shuffling and negative marking. Answers autosave, the app auto-marks into the gradebook, and you can publish results with the correct answers.
+- **Live class check-in**, **online assignment submission**, **your own attendance options**, **your own lists**, **quiz defaults** and an **in-app Help & Guide**.
 
-- **Student login permission bug** — the security rule for the `students`
-  collection was written in a way that broke specifically for the query
-  student login runs (find my own record by authUid). Fixed by checking
-  the record directly instead of doing an indirect lookup. **Requires
-  re-publishing rules — see above.**
-- **Passwords are now visible and changeable.** The Students list has a
-  Password column (masked, click "Show" to reveal). Opening Edit on any
-  student shows their current password and lets you set a new one anytime,
-  without needing their old one on hand. New students get a "Generate"
-  button next to the password field. Passwords are also included in Excel
-  export/import now.
-- **Re-importing after a Reset/delete no longer silently fails.** Since
-  the free plan can't delete Firebase Auth accounts from the browser,
-  reusing a roll number whose login still exists from before used to just
-  say "3 failed" with no explanation. Now it tells you exactly which roll
-  numbers are blocked and exactly what to do (delete that specific login
-  in Firebase Console → Authentication → Users, then re-import).
-- **Courses now has Import/Export Excel**, matching `docs/sample-courses.xlsx`
-  — this was completely missing before.
-- **New "Daily Attendance Log" report** on the Reports page — a day-by-day
-  grid (rows = students, columns = dates) showing exactly who was present/
-  absent/late/etc. on every date in a range you choose (a month, a whole
-  semester, whatever you need).
-- **New Student Profile page** — click "Profile" next to any student on
-  the Students page for one complete view: their info, attendance % per
-  enrolled course, and every mark they've ever been given, all in one place.
-- **New icon** — redesigned to look like a proper app icon (gradient
-  background, soft shadow, glossy highlight) instead of the flatter
-  version before.
-- **Excel-format backup/restore**, alongside the existing JSON version —
-  one workbook, one tab per collection, readable directly in Excel/Google
-  Sheets. A blank template (headers only, no data) is also downloadable if
-  you want to see the exact expected layout before you have real data.
-- Fixed several sidebar navigation links (Announcements, Course Content)
-  that were pointing nowhere on a few pages even though those pages existed.
+---
 
-## Bulk upload templates
+# Version 2 notes (already applied)
 
-Two places support "fill in a spreadsheet, upload it back" instead of
-clicking through every student one at a time:
+A free, personal classroom manager for Dr. Sanaullah, built on Firebase's free **Spark** plan and GitHub Pages. No credit card, no paid services, no Cloud Functions.
 
-- **Attendance** (`attendance.html`, Mark Attendance tab): pick a course
-  and a month, download a template with one column per day, fill in P/A/L/
-  Lt/E for each student/day, upload it back.
-- **Any grade item** (Assignments, Presentations, Quizzes, Tasks, Internal
-  Exams): open the **Marks** grid for any item, click **Download Template**
-  for a Roll Number/Name/Marks/Remarks spreadsheet pre-filled with that
-  item's roster, fill in the Marks and Remarks columns, then **Upload
-  Filled Marks**. (For Presentations specifically, this only covers Marks
-  and Remarks — Topic and Status still need to be set in the grid itself.)
+---
 
+## ⬆️ Upgrading from version 1 (do this once, ~10 minutes)
 
+Your data, Firebase project, logins and APK all stay the same.
 
-## 1. Create your Firebase project
+1. **Keep your keys.** `js/firebase-keys.js` in this folder already has your keys. If you ever swap projects, that is still the only file you edit.
+2. **Upload everything to GitHub.** Upload every file and folder in this `lms` folder to your repository, replacing the old ones. Old files that no longer exist here (like `js/gradebook-common.js`) can stay; nothing uses them.
+3. **Publish the new rules.** Go to Firebase Console → Firestore Database → **Rules**. Paste all of `docs/firestore.rules` and click **Publish**. The new pages will not work until you do this.
+4. **Run the one-time upgrade.** Sign in as admin. The dashboard shows a red banner "One-time upgrade needed". Click **Upgrade now**, then **Upgrade Attendance Now** in Settings → Maintenance. This converts your old attendance into the new, much lighter format. It's safe to run twice.
+5. **Check, then tidy up.** Check a few students' attendance. Then click **Delete Old-Format Records** in the same Maintenance box.
+6. **Set your rules.** Open **Settings**. Set your name, department, institution and **active term** (e.g. `Fall 2026`), and review the attendance and grading rules. Then edit each course and fill in its **Term**.
+7. **The Android app** needs no rebuild. It loads your live GitHub Pages site, so it shows version 2 as soon as GitHub finishes publishing (1–2 minutes). If a phone still shows the old screens, close and reopen the app once.
 
-1. Go to https://console.firebase.google.com → **Add project** (free, no
-   card required).
-2. Project settings (gear icon) → **General** → scroll to "Your apps" →
-   click the **Web** icon (`</>`) → register an app (nickname anything).
-3. Copy the `firebaseConfig` object it shows you.
-4. Paste those values into `js/firebase-keys.js` (replace the
-   `PASTE_YOUR_...` placeholders). This is the only file you'll ever need
-   to edit — every other file, including `js/firebase-config.js`, stays
-   exactly as delivered.
+---
 
-## 2. Enable Authentication
+## What's new in version 2
 
-Firebase Console → **Authentication** → Sign-in method → enable
-**Email/Password**.
+### Course Plans & coverage (new)
+- **Plan your semester.** Pick the start date, your class days (e.g. Mon/Wed/Fri), total weeks, and the Mid-term (week 8) and Final (week 16) weeks. The app builds every session for you.
+- **Excel in and out.**
+  - Download the plan (or a blank template), fill in topics in Excel, then upload it back.
+  - Dates can be `YYYY-MM-DD` or `DD/MM/YYYY`.
+  - Re-uploading keeps the ticks on topics you have already covered.
+- **Tick topics as you teach them.** Tick them on the plan page, or right inside **Attendance** when you mark a lecture.
+- **Meters and graphs.** Each course shows:
+  - a coverage ring (% covered) and a bar with an "expected by today" marker;
+  - a pace badge ("On track", "3 behind", "2 ahead");
+  - a **planned vs. actually covered** graph with the Mid and Final weeks marked.
+- **Students see it too.** They get a **Course Progress** page and progress rings on their dashboard.
+- **Dashboard "Today" panel.** Shows today's classes from your plans, with a reminder if attendance isn't marked yet.
 
-## 3. Create Firestore Database
+### Your rules, everywhere (Settings page)
+- **Attendance:** decide whether Leave, Excused or Late count as present, half, absent or not counted. Set the warning % and choose proportional or **band** scoring (e.g. ≥90% → full marks).
+- **Gradebook:**
+  - default weightage, with each course able to override it; set any weight to 0 to not charge that component;
+  - per item, a "count this in the gradebook" switch;
+  - **rescale or zero** for components with no marks yet, and **ignore or zero** for blank marks after the due date;
+  - average-of-% or total-marks aggregation, and **drop lowest N** quizzes or assignments;
+  - pass mark, decimals, and an editable **grading scale with grade points**.
+- **Student view:** choose whether students can see their running total and grade.
 
-Firebase Console → **Firestore Database** → Create database → start in
-**Production mode** (not test mode — the security rules below take over).
+### Reports (rebuilt)
+Pick a report, filter by **term, course, student, assessment type and date range**, and preview it on screen. Then **Excel**, **CSV** or **Print / Save as PDF**. Available reports:
+- Attendance Summary
+- Daily Attendance Log
+- Result Sheet (gradebook)
+- Marks Detail
+- Course Coverage
+- At-Risk Students
+- **Student Result Card** (with GPA)
+- Presentations
+- Student List
+- Course List
 
-## 4. Publish the security rules
+### Faster and lighter (fits the free plan)
+- **New attendance storage.** One record per student per course, instead of one per student per day. The dashboard, gradebook and reports now read roughly **50× less** data, so the 50,000-reads/day free limit is no longer a concern.
+- **Correct dates.** "Today" uses Pakistan time. The old version used UTC, which showed yesterday's date before 5 AM.
 
-Firebase Console → Firestore Database → **Rules** tab → paste the entire
-contents of `docs/firestore.rules` → **Publish**.
+### Works offline
+- Pages open without internet, and data you've already viewed is available.
+- You can **mark attendance in a classroom with no signal**; it syncs automatically when you reconnect. The sidebar shows Online or Offline.
 
-**Note:** this app deliberately does not use Firebase Storage. Since
-February 2026, Google requires a linked credit card (the Blaze plan) to
-use Storage at all, even for $0 actual usage — so Course Content and the
-Ebook Library instead work with Google Drive share links (see the section
-below), keeping the whole system genuinely free with no card, ever.
+### Also new
+- **WhatsApp buttons.** Ready-to-send messages for attendance warnings and results, using templates you edit in Settings. Free; nothing is sent automatically.
+- **Dark mode.** Toggle it at the bottom of the sidebar.
+- **Students change their own password** on a new **My Account** page. Your copy stays in sync.
+- **Gradebook:**
+  - class summary and a grade-distribution chart;
+  - "earned / possible" marks;
+  - instant bonus/negative edits;
+  - preview of unsaved weights;
+  - print.
+- **Attendance:**
+  - All Present / All Absent buttons;
+  - "Clear this day" (wrong date or cancelled class);
+  - live counts;
+  - the monthly template only shows your real class days and comes pre-filled.
+- **Marks grids:** live average, highest and lowest; "fill blanks" helper; marks above the total are blocked.
+- **Students:** filter by course or status, click course chips to enrol, WhatsApp link.
+- **Inactive/graduated students** stay out of new rosters, but their history remains.
+- **Courses:**
+  - Term field and term filter;
+  - enrolment count and plan % in the list;
+  - deleting a course can also clean up its records and removes the code from students.
+- **Student profile:** attendance, current standing and coverage per course, plus a link to their result card.
+- **Backup:** includes plans, settings and new attendance, and remembers when you last backed up (the dashboard reminds you after 14 days). Excel restore keeps leading zeros in phone numbers.
+- **Security:**
+  - signed-out visitors can no longer list all roll numbers;
+  - only https links are allowed for course files.
 
-## 5. Create your own admin (lecturer) login
+---
 
-1. Firebase Console → **Authentication** → Users → **Add user** →
-   enter your real email + a password.
-2. Copy the **User UID** shown for that new user.
-3. Firestore Database → **Start collection** → collection ID: `admins` →
-   Document ID: paste the UID you copied → add fields:
-   - `name` (string) → your display name, e.g. `Dr. Sanaullah`
-   - `email` (string) → the same email you signed up with
+## First-time setup (new Firebase project only)
 
-That's it — you can now log in as administrator from `index.html`.
+1. Go to https://console.firebase.google.com → **Add project** (free).
+2. Project settings → General → Your apps → **Web** (`</>`) → copy the config into `js/firebase-keys.js`.
+3. **Authentication** → Sign-in method → enable **Email/Password**.
+4. **Firestore Database** → Create database → **Production mode**.
+5. **Rules:** paste `docs/firestore.rules` and click **Publish**.
+6. Create your admin login:
+   - Authentication → Users → **Add user** → copy the **User UID**.
+   - Firestore → start collection `admins`, with document ID = that UID.
+   - Add the fields `name` and `email`.
+7. Push the folder to GitHub, then Settings → Pages → Deploy from branch `main` / root.
 
-## 6. Create a test student login
+The app deliberately does **not** use Firebase Storage, which now needs a card on file. Uploaded PDFs are stored inside the free Firestore database in 900 KB pieces (up to 10 MB per file, about 900 MB in total); Google Drive or any https link also works.
 
-1. Authentication → Add user → email can be anything
-   (e.g. `bsf21014@students.lms-kust.local` — matches the pattern the app
-   generates automatically from a roll number) + a password.
-2. Copy that user's UID.
-3. Firestore → `students` collection → new document, **Document ID =
-   the roll number** (e.g. `BSF-21-014`, case doesn't matter) → fields:
-   - `authUid` → the UID you copied
-   - `name`, `program`, `semester`, `section`, `status` → whatever test values
+## Using it day to day
 
-Log in on the Student tab with that roll number + the password you set.
+| I want to… | Go to |
+|---|---|
+| Plan the semester | **Course Plans** → pick course → Create Plan (or Download Excel Template → fill → Upload) |
+| Take attendance + tick today's topic | **Attendance** → course + date → mark → tick topic → Save |
+| Enter marks | **Assignments / Quizzes & Tasks / Presentations / Exams & Gradebook** → Marks (or Excel template) |
+| See final totals & grades | **Exams & Gradebook** → Gradebook tab → Run |
+| Change how anything is calculated | **Settings** |
+| Print a result card | **Reports** → Student Result Card, or a student's **Profile** → Result Card |
+| Warn a student on WhatsApp | Dashboard / Attendance report / Gradebook → green WhatsApp button |
 
-## 7. Run it locally / deploy to GitHub Pages
+## Files
 
-- **Locally:** just open `index.html` in a browser (Firebase's SDKs work
-  over `file://`, though for testing service-worker/PWA install behavior
-  later you'll want a local server — `python3 -m http.server` is enough).
-- **GitHub Pages:** push this whole folder to a repo, then Settings →
-  Pages → Deploy from branch → `main` → `/ (root)`. Same pipeline you
-  already used for the expense tracker.
+```
+index.html                 Login (admin / student)
+admin-dashboard.html       Dashboard: stats, course progress, today, trend, deadlines, warnings
+course-plan.html     NEW   Course plans + coverage meter + Excel in/out
+attendance.html            Mark (+ topics taught), report & warnings, monthly Excel upload
+students.html              Students (CRUD, Excel, passwords, filters)
+student-profile.html       One student, everything
+courses.html               Courses (term, clean-up delete, Excel)
+assignments.html           Assignments       ┐
+quizzes-tasks.html         Quizzes & tasks   ├ shared module js/grade-items.js
+presentations.html         Presentations     │
+marks.html                 Exams + Gradebook ┘
+announcements.html         Announcements (+ WhatsApp forward)
+course-content.html        Files & ebooks (upload PDFs or add links)
+history.html         v4    Change History (who changed what)
+reports.html               Report builder (Excel / CSV / PDF)
+settings.html        NEW   All rules + one-time upgrade
+backup.html                Backup / restore / reset
+student-*.html             Student portal (dashboard, course progress NEW, attendance,
+                           marks & result, assignments, presentations, content,
+                           announcements, my account NEW)
+sw.js                NEW   Offline support
+js/core.js           NEW   Shared helpers, settings, sidebar, charts, WhatsApp
+js/grading.js        NEW   Attendance storage, gradebook engine, course-plan logic
+js/theme.js          NEW   Light/dark mode
+js/files.js          v4    PDF upload in pieces + in-app PDF reader
+js/plan-import.js    v4    Course plan from Excel / PDF / Word / pasted text
+js/qr.js             v4    QR code maker (check-in)
+js/vendor/           v4    pdf.js and JSZip (open source, bundled — no internet needed)
+docs/firestore.rules       Security rules (publish after every upgrade)
+docs/SCHEMA.md             Data model
+docs/TESTING_CHECKLIST.md  What to check after upgrading
+```
 
-## What's new in Phase 2
-
-### Courses (`courses.html`)
-Add/edit/delete courses — code, title, credit hours, semester, section,
-teacher, reference books, outline. Course code is the document ID, so it
-can't be silently renamed after creation (delete and recreate if you need
-to change a code).
-
-### Students (`students.html`)
-Full CRUD, live search, and:
-- **Excel export** — downloads an `.xlsx` with every student field,
-  including their enrolled course codes.
-- **Excel import** — upload an `.xlsx`/`.xls` with a header row using any
-  of: `Roll Number`, `Name`, `Father's Name`, `Email`, `Phone`, `Program`,
-  `Semester`, `Section`, `Session`, `Status`, `Notes`, `Courses` (comma-
-  separated codes), and optionally `Password`. Rows without a Roll Number
-  are skipped; existing roll numbers are skipped (not overwritten) so
-  re-importing the same file twice is safe. If no `Password` column is
-  given, a default password is generated from the roll number — tell
-  students their initial password so they can log in (a self-service
-  "change password" screen isn't built yet).
-- When you **add** a student, the app also creates their login (Firebase
-  Auth account) automatically using a roll-number-derived email behind the
-  scenes — you never see or manage that email directly.
-- **Known free-tier limitation:** deleting a student removes their record
-  and dashboard access immediately, but the browser-only Firebase SDK can't
-  delete someone else's Auth account (that needs a paid Cloud Function).
-  The orphaned login becomes permanently unusable since its linked student
-  record is gone — harmless, and it doesn't consume meaningful quota.
-
-### Attendance (`attendance.html`)
-- **Mark Attendance tab:** pick a course + date, and the roster (any
-  student whose `Courses` field includes that course code) appears with
-  Present/Absent/Leave/Late/Excused buttons per student. Save writes/
-  updates one record per student for that exact course+date — re-marking
-  the same day overwrites rather than duplicating.
-- **Report & Warnings tab:** pick a course (or "All courses") and run the
-  report to see each student's attendance percentage, sorted lowest first,
-  with anything under 75% flagged as a warning. The same 75% calculation
-  feeds the "Attendance Warnings" stat card on the main dashboard.
-- A student only ever needs to add a course code to their profile once
-  (Students page) to start appearing on that course's attendance roster.
-
-## What's new in Phase 3
-
-All four new pages share one underlying model: a `gradeItems` definition
-(what/when/how much) plus per-student `gradeMarks` (who got what). This
-means Assignments, Presentations, Quizzes, Tasks, and Internal Exams all
-work the same way once you've used one of them.
-
-### Assignments (`assignments.html`)
-Define an assignment (title, course, due date, total marks, description,
-instructions, an optional attachment link) assigned to the entire class or
-selected students, then click **Marks** on any assignment to open a roster
-grid and enter marks + remarks per student.
-
-### Presentations (`presentations.html`)
-Schedule a "round" (e.g. "Presentation Round 1") with a date and total
-marks, choose presenters, then open **Topics & Marks** to assign each
-student's individual topic, mark their status (scheduled/completed/
-no-show), and record marks + remarks once they've presented.
-
-### Quizzes & Tasks (`quizzes-tasks.html`)
-Two tabs on one page. **Quizzes** work like assignments (title, course,
-date, total marks, roster marks entry). **Classroom Tasks** are similar but
-total marks are optional — leave it blank for a task that's just tracked,
-not graded; fill it in if you want it to feed into the gradebook.
-
-### Marks & Gradebook (`marks.html`)
-- **Internal Exams tab:** define Midterm / Sessional / Final Internal exams
-  per course and enter marks the same roster-grid way.
-- **Gradebook tab:** pick a course, set the weightage (Attendance / Quiz /
-  Assignment / Presentation / Task / Internal Exams — must total 100, saved
-  per-course), then **Run Gradebook**. It pulls live attendance %, and
-  average % from every quiz/assignment/presentation/task/exam recorded for
-  that course, applies your weights, adds any manual **Bonus**/**Negative**
-  marks you type directly into the table (saved automatically on change),
-  and shows a final weighted percentage + letter grade per student. **Export
-  Excel** downloads the exact table you're looking at.
-- The letter-grade scale (A/A-/B+/B/B-/C+/C/C-/D/F) is a common HEC-style
-  cutoff set — easy to adjust in `js/gradebook-common.js` (`letterGrade()`)
-  if KUST uses a different scale.
-
-## What's new in Phase 4
-
-### Announcements (`announcements.html` / student: `student-announcements.html`)
-Post a title + message to **all students** or to one specific course.
-Students see the 5 most recent on their dashboard, and the full list on
-their own Announcements page — filtered to "all" plus whatever courses
-they're enrolled in.
-
-### Course Content (`course-content.html` / student: `student-course-content.html`)
-Two tabs, both working the same way: **upload your file to Google Drive
-first, share it as "Anyone with the link," then paste that link into the
-app** along with a display name/category (or title/author/subject for
-ebooks). This app deliberately avoids Firebase Storage — since February
-2026 Google requires a linked credit card to use it at all, even for $0
-actual usage — so Drive links keep the whole system free with no card.
-- **Lecture Notes & Files:** tag each link with a course + category
-  (Lecture Notes / Course Outline / Reference Material / Other). Students
-  see only files for courses they're enrolled in.
-- **Ebook Library:** title/author/subject + link. Visible to every
-  signed-in student (not course-scoped, since your ebook collection spans
-  subjects rather than specific course sections).
-
-Deleting a file from the app only removes it from this list — the actual
-file stays completely safe in your Google Drive.
-
-## What's new in Phase 5
-
-### Reports (`reports.html`)
-Six one-click reports, each downloading a standalone `.xlsx`:
-- **Student Report** — full roster with all profile fields
-- **Course Report** — every course with credit hours, teacher, reference books
-- **Attendance Report** — per-student present/absent/leave/late/excused
-  counts + percentage, filterable by course, warnings flagged
-- **Marks & Gradebook Report** — the same weighted computation as the
-  Gradebook tab, exported per-course
-- **Assignment Report** — a Summary sheet (per assignment: graded vs.
-  assigned) plus a Detail sheet (every student's marks on every assignment)
-- **Presentation Report** — every student's topic, status, marks, and
-  remarks across all presentation rounds
-
-### Backup & Restore (`backup.html`)
-- **Download Backup** — one click exports every collection (students,
-  courses, attendance, assignments/presentations/quizzes/tasks/exams and
-  their marks, gradebook adjustments, announcements, course content and
-  ebook metadata) into a single dated `.json` file.
-- **Restore** — upload a backup file and it's merged back in: matching
-  records (by roll number / course code / etc.) are overwritten, everything
-  else is left untouched. Nothing is deleted by a restore.
-- Lecturer login accounts (`admins` collection) are intentionally excluded
-  from backups — those are set up manually per the README and don't need
-  to travel with your data.
-- **Note:** backups capture data records including the Google Drive links
-  you've added — the actual files live safely in your own Google Drive and
-  are unaffected either way.
-- **Reset All Data (Danger Zone):** a third section on this page lets you
-  wipe every collection at once — useful for clearing out test data before
-  real classroom use, without manually deleting each Firestore collection
-  by hand. It requires typing `DELETE ALL DATA` to confirm, and never
-  touches your own admin login. Student login accounts aren't deleted by
-  this either (same browser-only limitation as deleting individual
-  students) — they just become unused. **Always download a backup first**
-  unless you're certain you want to lose the data permanently.
-
-## Deploying as an Android APK
-
-See `docs/APK_GUIDE.md` for the full free pipeline (GitHub Pages →
-PWABuilder → sideload) — the same process you used for the expense tracker.
-
-## Before real classroom use
-
-Work through `docs/TESTING_CHECKLIST.md`. Two ready-to-import sample files
-are included if you want to test the Students/Courses import feature
-without using real class data first: `docs/sample-students.xlsx` and
-`docs/sample-courses.xlsx` (their course codes match each other, so
-importing both together demonstrates enrollment-linked attendance/grading
-correctly).
+## Known limits (free plan)
+- Deleting a student can't delete their Firebase login from the browser; it simply becomes unused.
+- Student passwords are stored so you can view and reset them. Only you and that student can read them. Treat backups and exports as private.
+- WhatsApp messages open ready to send; they are not sent automatically. Automatic sending would need a paid service.
 
 ## License
-
-MIT — see `LICENSE.md`. Every third-party library used (Firebase, SheetJS,
-Google Fonts) is free/open-source and loaded via CDN, nothing paid or
-bundled.
-
-## Everything is now built
-
-Auth (admin + student), Students, Courses, Attendance with warnings, the
-full Gradebook (Assignments, Presentations, Quizzes, Tasks, Internal Exams,
-weighted totals + letter grades), Announcements, Course Content + Ebook
-Library, Reports, and Backup/Restore — all running on Firebase's free
-Spark plan with no Cloud Functions anywhere.
-
-If you want to keep going from here, natural next additions would be: a
-password-reset flow for students, in-app file preview instead of
-opening a new tab, and the email-warning feature from the original spec
-(that one needs a transactional email service like EmailJS's free tier,
-since Firebase Auth's built-in emails only cover its own account-management
-flows) — happy to build any of those whenever you're ready.
-
-## Files in this folder
-
-```
-lms/
-├── index.html                   Login (admin/student toggle)
-├── admin-dashboard.html          Lecturer dashboard shell
-├── student-dashboard.html        Student read-only dashboard shell
-├── students.html                 Student management (CRUD + Excel import/export + passwords)
-├── student-profile.html           Complete one-page view of a single student (admin)
-├── courses.html                   Course management (CRUD + Excel import/export)
-├── attendance.html                Mark attendance + bulk monthly upload + % report with warnings
-├── assignments.html               Assignments (CRUD + marks entry + bulk upload)
-├── presentations.html             Presentation rounds (topics + marks + bulk upload)
-├── quizzes-tasks.html             Quizzes + classroom tasks (tabbed + bulk upload)
-├── marks.html                     Internal exams + computed Gradebook + bulk upload
-├── announcements.html             Post announcements (admin)
-├── student-announcements.html     Read announcements (student)
-├── course-content.html            Add course files + ebooks via Google Drive links (admin)
-├── student-course-content.html    Browse course files + ebooks (student)
-├── student-attendance.html        My attendance — per-course % + day-by-day log (student)
-├── student-marks.html             My marks across every grade item (student)
-├── student-assignments.html       My assignments + own grades (student)
-├── student-presentations.html     My presentation rounds — topic/status/marks (student)
-├── reports.html                   Seven one-click Excel reports, including the Daily Attendance Log
-├── backup.html                    Full backup download (JSON + Excel) + restore + blank template + Reset All Data
-├── LICENSE.md                    MIT license + third-party notices
-├── manifest.json                 PWA manifest (for the APK pipeline later)
-├── icons/                        App icons (192px, 512px)
-├── css/style.css                 Full design system
-├── js/firebase-keys.js            ← put your Firebase keys here (ONLY file you edit)
-├── js/firebase-config.js         Logic only — never needs editing
-├── js/auth.js                    Login + route-guard logic + secondary-app helper
-├── js/gradebook-common.js        Shared helpers for Phase 3+ pages + bulk marks upload
-├── js/admin-dashboard.js
-├── js/student-dashboard.js
-├── js/student-attendance.js
-├── js/student-marks.js
-├── js/student-assignments.js
-├── js/student-presentations.js
-├── js/students.js
-├── js/student-profile.js
-├── js/courses.js
-├── js/attendance.js
-├── js/assignments.js
-├── js/presentations.js
-├── js/quizzes-tasks.js
-├── js/marks.js
-├── js/announcements.js
-├── js/course-content.js
-├── js/reports.js
-├── js/backup.js
-├── js/mobile-nav.js
-└── docs/
-    ├── firestore.rules           Paste into Firebase Console → Firestore → Rules (RE-PASTE after this update!)
-    ├── SCHEMA.md                 Data model reference
-    ├── APK_GUIDE.md               PWABuilder → Android APK walkthrough
-    ├── TESTING_CHECKLIST.md      Full pre-launch checklist
-    ├── sample-students.xlsx      Ready-to-import test data (includes Password column)
-    └── sample-courses.xlsx       Ready-to-import test data
-```
-
-## Known limitations (by design, given the free/no-server constraint)
-
-- **Deleted student logins can't be auto-removed.** The free client SDK
-  can't delete another user's Firebase Auth account — only that user or a
-  paid server-side Admin SDK can. Deleting a student removes their data and
-  access, but their login technically still exists, unused, in Firebase
-  Authentication. If you ever reuse that same roll number later, you'll
-  need to manually delete the old login first (Firebase Console →
-  Authentication → Users → find it → delete), otherwise re-adding that
-  roll number will tell you the login already exists.
-- **Passwords are stored in plain text in Firestore**, visible only to you
-  (the admin) and to that one student's own account — nobody else can read
-  them, and Firestore itself is encrypted at rest. This is a deliberate
-  trade-off for a personal single-lecturer tool with no paid backend: it's
-  what makes "show me the password" and "change a student's password"
-  possible at all without a server. If this ever needs to meet a stricter
-  security bar, that would require a paid backend (Cloud Functions) to hash
-  and manage passwords properly instead.
-- **Presentation bulk-upload only covers Marks and Remarks** — Topic and
-  Status (scheduled/completed/no-show) still need to be set per-student
-  in the in-app grid, since those aren't part of the standard bulk format.
-
-## Ideas for later (all still free)
-
-Things worth considering if you keep using this and want more:
-
-- **Dark mode toggle** — a light lift given the CSS is already
-  variable-based.
-- **CSV export alongside Excel** — trivial to add, useful for anyone who
-  wants to open exports in tools other than Excel/Sheets.
-- **Attendance reminders** — a "haven't marked attendance today" banner on
-  the dashboard if it's a weekday and nothing's been marked yet for any
-  course.
-- **Email notifications** — the original spec mentioned emailing
-  attendance warnings; a free service like EmailJS's free tier could add
-  this without needing a paid backend, at the cost of a monthly send limit.
-- **Bulk internal-exam upload** — the same template pattern already used
-  for assignments/quizzes/etc. would work for internal exams too (it
-  actually already does, since Internal Exams shares the same Marks
-  modal as the others).
+MIT — see `LICENSE.md`. Libraries: Firebase JS SDK, SheetJS, pdf.js (Apache 2.0); JSZip (MIT); Google Fonts (OFL).

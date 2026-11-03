@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" data-role="student" data-active="help"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Help</h1><div class="today" id="page-sub">How to use the student portal</div></div>
+      <div class="user-chip">
+        <div><div id="student-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="student-initial">·</div>
+      </div>
+    </div>
+
+    <article class="guide" id="guide"><h2>Using the student portal</h2>
+<ol>
+<li><strong>Sign in.</strong> Open the class website or app → <strong>Student</strong> tab → your roll number (e.g. <code>BSF-23-014</code>) and the password your lecturer gave you.</li>
+<li><strong>Change your password:</strong> <strong>My Account → Change My Password</strong>. You need your current password.</li>
+<li><strong>Dashboard:</strong><ul>
+<li>green banners for quizzes open now;</li>
+<li><strong>Class Check-in</strong> (type the code shown in class);</li>
+<li>your overall attendance;</li>
+<li>each course&#39;s progress ring and attendance bar;</li>
+<li>deadlines and announcements.</li>
+</ul>
+</li>
+<li><strong>Class Check-in:</strong> <strong>scan the QR code</strong> on the board with your phone camera and open the link — you are checked in (sign in first if asked; it finishes by itself). Or choose the course, type the 6-digit code, and tap <strong>Check in</strong> during the time your lecturer allows. &quot;Wrong or expired&quot; means the code is mistyped, expired, or you already checked in.</li>
+<li><strong>Course Progress:</strong> what has been taught each week, what&#39;s next, and when exams are. <strong>Add classes &amp; deadlines to my calendar</strong> saves a calendar file — open it on your phone to add every class, exam and deadline.</li>
+<li><strong>Attendance:</strong> your % per course, counts per option, and every day&#39;s record. If you are below the required %, it tells you how many classes in a row you need to recover. <strong>Request Leave:</strong> pick the course (or all), the dates and the reason, then <strong>Send Request</strong>. <em>My Leave Requests</em> shows Waiting / Approved / Not approved and your lecturer&#39;s note; you can <strong>Withdraw</strong> a request while it is waiting.</li>
+<li><strong>Online Quizzes:</strong><ul>
+<li>Tap <strong>Start quiz</strong> only when ready; the timer does not stop.</li>
+<li>Answers save automatically. If your internet drops, reopen the quiz and tap <strong>Continue</strong>.</li>
+<li>Tap <strong>Submit quiz</strong> when done; you cannot change answers afterwards.</li>
+<li>Leaving the quiz screen is recorded.</li>
+<li>After your lecturer publishes results, tap <strong>View result</strong> to see your score and the correct answers.</li>
+</ul>
+</li>
+<li><strong>Assignments:</strong> read the instructions. If online submission is on:<ol>
+<li>Upload your file to Google Drive → <strong>Share → Anyone with the link → Copy link</strong>.</li>
+<li>Paste the link → <strong>Submit</strong>.</li>
+<li>You can update it later; the latest time is what your lecturer sees, and after the due date it shows as <strong>Late</strong>.</li>
+</ol>
+</li>
+<li><strong>Marks &amp; Result:</strong> every mark with remarks. Your running total appears too if your lecturer has turned it on.</li>
+<li><strong>Course Content / Announcements:</strong> files for your courses, the ebook library, and messages from your lecturer. PDFs open inside the app — use <strong>+ / −</strong> to zoom and <strong>Download</strong> to keep a copy. Once opened, a PDF opens again without using more internet.</li>
+<li><strong>Install on your phone:</strong> open the website in Chrome → <strong>⋮ → Add to Home screen</strong>.</li>
+</ol>
+</article>
+  </main>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/help.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

@@ -2,59 +2,78 @@
 // STUDENTS — CRUD + Excel import/export + password visibility/change
 // ==========================================================================
 
-document.getElementById('logout-btn').addEventListener('click', logout);
-
-let allStudents = [];
+let allStudents = [], allCourses = [], settings;
 
 requireAdmin(async (user, adminData) => {
-  document.getElementById('admin-name').textContent = (adminData && adminData.name) || user.email;
-  document.getElementById('admin-initial').textContent = ((adminData && adminData.name) || user.email).charAt(0).toUpperCase();
+  setUserChip((adminData && adminData.name) || user.email);
+  settings = await loadSettings();
+  const cs = await db.collection('courses').get();
+  allCourses = cs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.id.localeCompare(b.id));
+  document.getElementById('filter-course').insertAdjacentHTML('beforeend', courseOptionsHtml(allCourses));
+  document.getElementById('course-codes').innerHTML = allCourses.map(c => `<option value="${h(c.id)}">${h(c.title || '')}</option>`).join('');
   await loadStudents();
 });
 
 async function loadStudents() {
   const tbody = document.getElementById('table-body');
   try {
-    const snap = await db.collection('students').orderBy('name').get();
+    const snap = await db.collection('students').get();
     allStudents = [];
     snap.forEach(doc => allStudents.push({ id: doc.id, ...doc.data() }));
-    renderTable(allStudents);
-    document.getElementById('student-count').textContent = `${allStudents.length} student${allStudents.length === 1 ? '' : 's'}`;
+    allStudents.sort((a, b) => (a.name || '').localeCompare(b.name || '') || a.id.localeCompare(b.id));
+    applyFilters();
+    const active = allStudents.filter(isActiveStudent).length;
+    document.getElementById('student-count').textContent = `${allStudents.length} student${allStudents.length === 1 ? '' : 's'} · ${active} active`;
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">Could not load students: ${escapeHtml(e.message)}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">Could not load students: ${escapeHtml(e.message)}</div></td></tr>`;
   }
 }
 
 function renderTable(students) {
   const tbody = document.getElementById('table-body');
   if (students.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">No students yet. Add one, or import from Excel.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">${allStudents.length ? 'No students match the filters.' : 'No students yet. Add one, or import from Excel.'}</div></td></tr>`;
     return;
   }
   tbody.innerHTML = students.map(s => `
     <tr>
-      <td class="mono">${escapeHtml(s.id)}</td>
-      <td>${escapeHtml(s.name || '')}</td>
-      <td>${escapeHtml(s.program || '—')}</td>
-      <td class="num">${s.semester ?? '—'}</td>
-      <td>${escapeHtml(s.section || '—')}</td>
-      <td><span class="badge ${statusBadgeClass(s.status)}">${escapeHtml(s.status || 'active')}</span></td>
+      <td class="mono">${h(s.id)}</td>
+      <td><a href="student-profile.html?roll=${encodeURIComponent(s.id)}">${h(s.name || '')}</a></td>
+      <td>${h(s.program || '—')}</td>
+      <td class="c num">${s.semester ?? '—'}</td>
+      <td>${h(s.section || '—')}</td>
+      <td class="mono small">${h((s.course || []).join(', ') || '—')}</td>
+      <td><span class="badge ${statusBadgeClass(s.status)}">${h(s.status || 'active')}</span></td>
       <td>
         ${s.loginPassword
-          ? `<span class="mono row-password" data-password="${escapeAttr(s.loginPassword)}" data-visible="false">••••••••</span>
+          ? `<span class="mono row-password" data-password="${h(s.loginPassword)}" data-visible="false">••••••••</span>
              <button class="icon-btn" onclick="togglePasswordInRow(this)" style="margin-left:4px;">Show</button>`
           : '<span class="row-meta">—</span>'}
       </td>
       <td>
         <div class="row-actions">
-          <button class="icon-btn" onclick="openEdit('${escapeAttr(s.id)}')">Edit</button>
-          <button class="icon-btn" onclick="viewProfile('${escapeAttr(s.id)}')">Profile</button>
-          <button class="icon-btn danger" onclick="confirmDelete('${escapeAttr(s.id)}')">Delete</button>
+          <button class="icon-btn" onclick="openEdit('${jsArg(s.id)}')">Edit</button>
+          <button class="icon-btn" onclick="viewProfile('${jsArg(s.id)}')">Profile</button>
+          ${s.phone ? `<a class="icon-btn" style="text-decoration:none;" target="_blank" rel="noopener" href="${h(waLink(s.phone, 'Dear ' + (s.name || '') + ', ', settings))}">WhatsApp</a>` : ''}
+          <button class="icon-btn danger" onclick="confirmDelete('${jsArg(s.id)}')">Delete</button>
         </div>
       </td>
     </tr>
   `).join('');
 }
+
+function applyFilters() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const course = document.getElementById('filter-course').value;
+  const status = document.getElementById('filter-status').value;
+  renderTable(allStudents.filter(s =>
+    (!q || s.id.toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q) ||
+      (s.program || '').toLowerCase().includes(q) || (s.phone || '').includes(q)) &&
+    (!course || (s.course || []).includes(course)) &&
+    (!status || (s.status || 'active') === status)
+  ));
+}
+['filter-course', 'filter-status'].forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
 
 window.togglePasswordInRow = function (btn) {
   const span = btn.previousElementSibling;
@@ -76,19 +95,11 @@ window.viewProfile = function (roll) {
 
 function statusBadgeClass(status) {
   if (status === 'inactive') return 'warn';
-  if (status === 'graduated') return 'ok';
+  if (status === 'graduated') return 'neutral';
   return 'ok';
 }
 
-document.getElementById('search-input').addEventListener('input', (e) => {
-  const q = e.target.value.toLowerCase().trim();
-  const filtered = allStudents.filter(s =>
-    s.id.toLowerCase().includes(q) ||
-    (s.name || '').toLowerCase().includes(q) ||
-    (s.program || '').toLowerCase().includes(q)
-  );
-  renderTable(filtered);
-});
+document.getElementById('search-input').addEventListener('input', applyFilters);
 
 // ---------- Modal ----------
 
@@ -104,10 +115,11 @@ function openModal() {
   document.getElementById('original-roll').value = '';
   form.reset();
   document.getElementById('f-roll').disabled = false;
-  document.getElementById('password-field').style.display = 'block';
+  document.getElementById('password-field').classList.remove('hidden');
   document.getElementById('f-password').required = true;
-  document.getElementById('password-view-field').style.display = 'none';
+  document.getElementById('password-view-field').classList.add('hidden');
   clearFormMsg();
+  renderCourseChips();
   backdrop.classList.add('open');
 }
 
@@ -130,9 +142,9 @@ window.openEdit = function (roll) {
   document.getElementById('f-notes').value = s.notes || '';
   document.getElementById('f-courses').value = (s.course || []).join(', ');
 
-  document.getElementById('password-field').style.display = 'none';
+  document.getElementById('password-field').classList.add('hidden');
   document.getElementById('f-password').required = false;
-  document.getElementById('password-view-field').style.display = 'block';
+  document.getElementById('password-view-field').classList.remove('hidden');
   document.getElementById('f-password-view').value = s.loginPassword || '(not on file — set one below)';
   document.getElementById('f-password-view').type = 'password';
   document.getElementById('btn-toggle-password-visibility').textContent = 'Show';
@@ -140,8 +152,24 @@ window.openEdit = function (roll) {
   clearMsg('password-change-msg');
 
   clearFormMsg();
+  renderCourseChips();
   backdrop.classList.add('open');
 };
+
+// Clickable chips for quick enrolment
+function renderCourseChips() {
+  const cur = new Set(document.getElementById('f-courses').value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean));
+  const list = allCourses.filter(c => inActiveTerm(c, settings) || cur.has(c.id));
+  document.getElementById('course-chips').innerHTML = list.map(c =>
+    `<button type="button" class="chip-btn${cur.has(c.id) ? ' active' : ''}" data-code="${h(c.id)}" title="${h(c.title || '')}">${h(c.id)}</button>`).join('');
+  document.querySelectorAll('#course-chips .chip-btn').forEach(b => b.addEventListener('click', () => {
+    const set = new Set(document.getElementById('f-courses').value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean));
+    if (set.has(b.dataset.code)) set.delete(b.dataset.code); else set.add(b.dataset.code);
+    document.getElementById('f-courses').value = [...set].join(', ');
+    renderCourseChips();
+  }));
+}
+document.getElementById('f-courses').addEventListener('change', renderCourseChips);
 
 function closeModal() { backdrop.classList.remove('open'); }
 
@@ -215,6 +243,7 @@ document.getElementById('btn-change-password').addEventListener('click', async (
     document.getElementById('f-password-view').value = newPassword;
     document.getElementById('f-password-new').value = '';
     showMsg('password-change-msg', 'Password changed successfully.', 'info');
+    logChange('Student password changed', roll);
     await loadStudents();
   } catch (err) {
     showMsg('password-change-msg', 'Could not change password: ' + friendlyError(err), 'error');
@@ -273,6 +302,7 @@ form.addEventListener('submit', async (e) => {
         authUid, name, fatherName, email, phone, program, semester, section, session, status, notes, course,
         loginPassword: password
       });
+      logChange('Student added', `${roll} · ${name}`);
       showFormMsg(`Student saved. Their login password is: ${password} — write this down now, it's also visible anytime from the Students list.`, 'info');
       await loadStudents();
       setTimeout(() => { closeModal(); }, 2800);
@@ -305,6 +335,7 @@ window.confirmDelete = async function (roll) {
   try {
     await db.collection('students').doc(roll).delete();
     await db.collection('studentLogins').doc(roll).delete().catch(() => {}); // harmless if it doesn't exist
+    logChange('Student deleted', roll);
     await loadStudents();
   } catch (e) {
     alert('Could not delete: ' + e.message);
@@ -423,10 +454,3 @@ document.getElementById('import-file').addEventListener('change', async (e) => {
     e.target.value = '';
   }
 });
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-function escapeAttr(str) {
-  return String(str).replace(/'/g, "\\'");
-}

@@ -1,5 +1,7 @@
 # Converting to an Android APK (Free, via PWABuilder)
 
+> **Version 2 note:** you do **not** need a new APK for this upgrade. Your installed app opens the live GitHub Pages site, so it shows the new version as soon as you upload the files. Version 2 also adds a service worker, which lets the app open offline. Rebuild the APK only if you want a new icon or name, and reuse your existing `signing.keystore` and its password when you do. Keep those two files private and never upload them to GitHub.
+
 This uses the same free pipeline as your expense tracker app: GitHub Pages
 → PWABuilder → sideload. No app store account, no paid tooling.
 
@@ -30,10 +32,8 @@ folder with both files, commit, and push.
 
 1. Go to https://www.pwabuilder.com
 2. Paste your GitHub Pages URL and click **Start**.
-3. PWABuilder scores your manifest and service worker. You may see a note
-   that there's no service worker yet — that's fine for Phase 1; it just
-   means the app won't work fully offline yet (everything still works fine
-   online, which is the normal case for a Firebase-backed app).
+3. PWABuilder scores your manifest and service worker (`sw.js` is included
+   from version 2, so offline support is detected).
 4. Click **Package for Stores** → choose **Android**.
 5. Keep the defaults (Package ID can be something like
    `com.kust.lecturerms`) → **Generate**.

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Plans · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" data-role="admin" data-active="plans"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Course Plans</h1><div class="today" id="page-sub">Plan each lecture, tick topics as you teach them, and track coverage</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="gap-row">
+        <select id="plan-course"><option value="">Select a course…</option></select>
+        <label class="check-row"><input type="checkbox" id="plan-all-terms"> Show all terms</label>
+      </div>
+      <div class="toolbar-actions" id="plan-actions" style="display:none;">
+        <button class="btn btn-outline" id="btn-plan-export">Download Excel</button>
+        <button class="btn btn-outline" id="btn-plan-import" title="Excel, PDF or Word — your own format is fine">Upload My Plan</button>
+        <button class="btn btn-outline" id="btn-plan-paste">Paste a List</button>
+        <input type="file" id="plan-import-file" accept=".xlsx,.xls,.csv,.pdf,.docx,.txt" class="hidden">
+        <button class="btn btn-outline" id="btn-plan-ics" title="Add every class to Google Calendar / phone calendar">Add to Calendar</button>
+        <button class="btn btn-outline" id="btn-plan-print">Print</button>
+        <button class="btn btn-outline" id="btn-plan-settings">Plan Settings</button>
+        <button class="btn btn-primary-sm" id="btn-add-session">+ Add Session</button>
+      </div>
+    </div>
+
+    <div id="plan-empty" class="panel">
+      <div class="empty-state">Choose a course above to see or create its course plan.</div>
+    </div>
+
+    <!-- Setup (no plan yet) -->
+    <div id="plan-setup" class="panel hidden">
+      <h3>Create a Course Plan</h3>
+      <p class="help"><b>Already have a course plan?</b> Set the start date and class days below, then press <b>Upload my plan</b> and choose your Excel, PDF or Word file — in your own format. The app reads the weeks and topics, shows them to you to check, and turns them into a tick-off checklist. No file? Press <b>Create Plan</b> for an empty week-by-week skeleton, or <b>Paste a list</b> of topics.</p>
+      <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));">
+        <div class="field"><label>Semester starts (Week 1)</label><input type="date" id="setup-start"></div>
+        <div class="field"><label>Total weeks</label><input type="number" id="setup-weeks" min="1" max="30" value="16"></div>
+        <div class="field"><label>Mid-term week</label><input type="number" id="setup-mid" min="0" max="30" value="8"></div>
+        <div class="field"><label>Final-term week</label><input type="number" id="setup-final" min="0" max="30" value="16"></div>
+      </div>
+      <div class="field"><label>Class days each week</label><div class="chip-row" id="setup-days"></div></div>
+      <div class="gap-row">
+        <button class="btn btn-primary-sm" id="btn-setup-upload">Upload my plan (Excel / PDF / Word)</button>
+        <button class="btn btn-outline" id="btn-setup-paste">Paste a list</button>
+        <button class="btn btn-outline" id="btn-setup-create">Create empty plan</button>
+        <button class="btn btn-outline" id="btn-setup-template">Download Excel Template</button>
+      </div>
+      <div class="form-msg" id="setup-msg"></div>
+    </div>
+
+    <!-- Plan view -->
+    <div id="plan-view" class="hidden">
+      <div class="print-only" id="plan-print-head"></div>
+      <div class="panel" style="margin-bottom:18px;">
+        <div class="plan-hero">
+          <div id="plan-ring"></div>
+          <div>
+            <div class="gap-row" style="justify-content:space-between;margin-bottom:12px;">
+              <div><h2 style="font-size:19px;" id="plan-title"></h2><div class="muted small" id="plan-subtitle"></div></div>
+              <span class="badge" id="plan-pace"></span>
+            </div>
+            <div class="plan-stats" id="plan-stats"></div>
+            <div style="margin-top:14px;" id="plan-bar"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:18px;">
+        <h3>Planned vs. Actually Covered</h3>
+        <div id="plan-chart"></div>
+      </div>
+      <div class="chip-row no-print" id="plan-filter">
+        <button class="chip-btn active" data-f="all">All sessions</button>
+        <button class="chip-btn" data-f="pending">Not yet covered</button>
+        <button class="chip-btn" data-f="covered">Covered</button>
+        <button class="chip-btn" data-f="current">This week</button>
+      </div>
+      <div id="plan-weeks"></div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="paste-modal">
+  <div class="modal">
+    <h2>Paste your topics</h2>
+    <p class="help">Copy the topics from anywhere (Word, PDF, WhatsApp, a website) and paste them here — one topic per line. Lines like "Week 3" start a new week; without them the topics are spread over your class days.</p>
+    <textarea id="paste-text" rows="12" placeholder="Week 1&#10;Introduction to finance&#10;Financial statements&#10;Week 2&#10;Ratio analysis"></textarea>
+    <div class="modal-actions"><button class="btn btn-outline" id="paste-cancel">Cancel</button><button class="btn btn-primary-sm" id="paste-go">Read topics</button></div>
+  </div>
+</div>
+<div class="modal-backdrop" id="session-modal">
+  <div class="modal">
+    <h2 id="session-modal-title">Edit Session</h2>
+    <form id="session-form">
+      <input type="hidden" id="s-id">
+      <div class="form-grid">
+        <div class="field"><label>Week</label><input type="number" id="s-week" min="1" max="30" required></div>
+        <div class="field"><label>Date</label><input type="date" id="s-date"></div>
+        <div class="field"><label>Type</label><select id="s-type"></select></div>
+        <div class="field"><label>Covered on</label><input type="date" id="s-covered-on"></div>
+        <div class="field full"><label>Topic</label><input type="text" id="s-topic" placeholder="e.g. Time Value of Money — Present & Future Value"></div>
+        <div class="field full"><label>Details / subtopics / reading</label><textarea id="s-details" rows="3"></textarea></div>
+      </div>
+      <div class="form-msg" id="s-msg"></div>
+      <div class="modal-actions" style="justify-content:space-between;">
+        <button type="button" class="btn btn-danger-sm" id="s-delete">Delete Session</button>
+        <div class="gap-row">
+          <button type="button" class="btn btn-outline" id="s-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary-sm">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="plan-settings-modal">
+  <div class="modal">
+    <h2>Plan Settings</h2>
+    <div class="form-grid">
+      <div class="field"><label>Semester starts (Week 1)</label><input type="date" id="ps-start"></div>
+      <div class="field"><label>Total weeks</label><input type="number" id="ps-weeks" min="1" max="30"></div>
+      <div class="field"><label>Mid-term week</label><input type="number" id="ps-mid" min="0" max="30"></div>
+      <div class="field"><label>Final-term week</label><input type="number" id="ps-final" min="0" max="30"></div>
+      <div class="field full"><label>Class days each week</label><div class="chip-row" id="ps-days"></div></div>
+      <div class="field full"><label class="check-row"><input type="checkbox" id="ps-redate"> Re-calculate all session dates from the start date &amp; class days (topics and ticks are kept)</label></div>
+    </div>
+    <div class="form-msg" id="ps-msg"></div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button type="button" class="btn btn-danger-sm" id="ps-delete">Delete Whole Plan</button>
+      <div class="gap-row">
+        <button type="button" class="btn btn-outline" id="ps-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary-sm" id="ps-save">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/vendor/jszip.min.js"></script>
+<script src="js/files.js"></script>
+<script src="js/plan-import.js"></script>
+<script src="js/course-plan.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

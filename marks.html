@@ -3,43 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marks &amp; Gradebook · Sanaullah's Classroom</title>
+<title>Exams & Gradebook · Sanaullah's Classroom</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/style.css">
 <style>
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--hairline); }
-  .tab-btn { padding: 10px 4px; margin-right: 22px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--slate); border-bottom: 2px solid transparent; }
-  .tab-btn.active { color: var(--ink); border-color: var(--brass); }
-  .adj-input { width: 60px; padding: 5px 7px; border: 1px solid var(--hairline); border-radius: 6px; font-family: var(--font-mono); font-size: 12.5px; text-align: right; }
+.adj-input { width: 62px; padding: 5px 7px; border: 1px solid var(--hairline); border-radius: 6px; font-family: var(--font-mono); font-size: 12.5px; text-align: right; }
+tr.fail td { background: rgba(181,72,77,0.05); }
 </style>
 </head>
 <body>
 
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div></div>
-    <div class="nav-group-label">Overview</div>
-    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
-    <div class="nav-group-label">Academics</div>
-    <a class="nav-link" href="students.html">Students</a>
-    <a class="nav-link" href="courses.html">Courses</a>
-    <a class="nav-link" href="attendance.html">Attendance</a>
-    <a class="nav-link active" href="marks.html">Marks &amp; Gradebook</a>
-    <a class="nav-link" href="assignments.html">Assignments</a>
-    <a class="nav-link" href="presentations.html">Presentations</a>
-    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
-    <div class="nav-group-label">Communication</div>
-    <a class="nav-link" href="announcements.html">Announcements</a>
-    <a class="nav-link" href="course-content.html">Course Content</a>
-    <div class="nav-group-label">System</div>
-    <a class="nav-link" href="reports.html">Reports</a>
-    <a class="nav-link" href="backup.html">Backup</a>
-  </aside>
+  <aside class="sidebar" data-role="admin" data-active="marks"></aside>
 
   <main class="main">
     <div class="topbar">
-      <div><h1>Marks &amp; Gradebook</h1><div class="today" id="page-sub">—</div></div>
+      <div><h1>Exams &amp; Gradebook</h1><div class="today" id="page-sub"></div></div>
       <div class="user-chip">
         <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
         <div class="avatar" id="admin-initial">·</div>
@@ -47,124 +30,145 @@
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" id="tab-exams">Internal Exams</button>
-      <button class="tab-btn" id="tab-gradebook">Gradebook</button>
+      <button class="tab-btn active" data-tab="gradebook">Gradebook</button>
+      <button class="tab-btn" data-tab="exams">Internal Exams</button>
     </div>
 
-    <!-- INTERNAL EXAMS -->
-    <div id="panel-exams">
-      <div class="toolbar">
-        <select id="filter-course" style="max-width:260px;padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;">
-          <option value="">All courses</option>
-        </select>
-        <div class="toolbar-actions">
-          <button class="btn btn-primary-sm" id="btn-add">+ New Internal Exam</button>
-        </div>
-      </div>
-      <div class="table-panel">
-        <table class="data-table">
-          <thead><tr><th>Exam</th><th>Course</th><th>Date</th><th>Total Marks</th><th>Assigned To</th><th></th></tr></thead>
-          <tbody id="table-body"><tr><td colspan="6"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- GRADEBOOK -->
-    <div id="panel-gradebook" style="display:none;">
-      <div class="toolbar">
-        <select id="gb-course" style="max-width:260px;padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;">
-          <option value="">Select a course…</option>
-        </select>
-        <div class="toolbar-actions">
-          <button class="btn btn-outline" id="btn-export-gb">Export Excel</button>
-          <button class="btn btn-primary-sm" id="btn-run-gb">Run Gradebook</button>
-        </div>
+    <div id="tab-gradebook">
+      <div class="filter-row">
+        <div class="field grow"><label>Course</label><select id="gb-course"><option value="">Select a course…</option></select></div>
+        <div class="field"><label>From (optional)</label><input type="date" id="gb-from"></div>
+        <div class="field"><label>To (optional)</label><input type="date" id="gb-to"></div>
+        <div class="field"><label class="check-row"><input type="checkbox" id="gb-inactive"> Include inactive</label></div>
+        <div class="field"><button class="btn btn-primary-sm" id="btn-run-gb">Run Gradebook</button></div>
       </div>
 
       <div class="panel" style="margin-bottom:18px;">
-        <h3>Weightage (must total 100)</h3>
+        <h3>Weightage for this course <span class="muted small" style="font-family:var(--font-body);font-weight:400;">— must total 100. Set a weight to 0 to not charge that component.</span></h3>
         <div class="weights-form">
-          <div class="field"><label>Attendance %</label><input type="number" id="w-attendance" value="10"></div>
-          <div class="field"><label>Quiz %</label><input type="number" id="w-quiz" value="15"></div>
-          <div class="field"><label>Assignment %</label><input type="number" id="w-assignment" value="20"></div>
-          <div class="field"><label>Presentation %</label><input type="number" id="w-presentation" value="10"></div>
-          <div class="field"><label>Task %</label><input type="number" id="w-task" value="5"></div>
-          <div class="field"><label>Internal Exams %</label><input type="number" id="w-exam" value="40"></div>
+          <div class="field"><label>Attendance</label><input type="number" id="w-attendance" min="0" step="any"></div>
+          <div class="field"><label>Quizzes</label><input type="number" id="w-quiz" min="0" step="any"></div>
+          <div class="field"><label>Assignments</label><input type="number" id="w-assignment" min="0" step="any"></div>
+          <div class="field"><label>Presentations</label><input type="number" id="w-presentation" min="0" step="any"></div>
+          <div class="field"><label>Tasks</label><input type="number" id="w-task" min="0" step="any"></div>
+          <div class="field"><label>Internal Exams</label><input type="number" id="w-exam" min="0" step="any"></div>
         </div>
-        <button class="btn btn-outline" id="btn-save-weights">Save Weights for this Course</button>
-        <span class="form-msg" id="weights-msg" style="display:inline-block;margin-left:10px;"></span>
+        <div class="gap-row">
+          <span class="muted small">Total: <b id="w-sum">100</b></span>
+          <button class="btn btn-outline" id="btn-save-weights">Save for this Course</button>
+          <button class="btn btn-outline" id="btn-default-weights">Reset to Default</button>
+          <a class="link-btn small" href="settings.html#grading">More grading rules →</a>
+          <span class="form-msg" id="weights-msg" style="display:inline-block;margin:0;"></span>
+        </div>
       </div>
 
-      <div class="table-panel">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Roll No.</th><th>Name</th><th>Att%</th><th>Quiz%</th><th>Assign%</th>
-              <th>Present%</th><th>Task%</th><th>Exam%</th><th>Bonus</th><th>Neg.</th><th>Total%</th><th>Grade</th>
-            </tr>
-          </thead>
-          <tbody id="gb-body"><tr><td colspan="12"><div class="empty-state">Select a course and click "Run Gradebook".</div></td></tr></tbody>
+      <div id="gb-summary" class="hidden" style="margin-bottom:18px;">
+        <div class="panel-grid">
+          <div class="panel"><h3>Class Summary</h3><div class="kpi-inline" id="gb-kpis"></div></div>
+          <div class="panel"><h3>Grade Distribution</h3><div id="gb-dist"></div></div>
+        </div>
+      </div>
+
+      <div class="toolbar no-print">
+        <div class="muted small" id="gb-note">Bonus / Negative are extra percentage points — edit them right in the table; totals update instantly.</div>
+        <div class="toolbar-actions">
+          <button class="btn btn-outline" id="btn-export-gb">Export Excel</button>
+          <button class="btn btn-outline" id="btn-print-gb">Print</button>
+        </div>
+      </div>
+      <div class="table-panel table-scroll">
+        <table class="data-table compact">
+          <thead><tr><th>Roll No.</th><th>Name</th><th class="r">Att.</th><th class="r">Quiz</th><th class="r">Assign.</th><th class="r">Pres.</th><th class="r">Task</th><th class="r">Exam</th><th class="r">Earned / Possible</th><th>Bonus</th><th>Neg.</th><th class="r">Total</th><th>Grade</th><th></th></tr></thead>
+          <tbody id="gb-body"><tr><td colspan="14"><div class="empty-state">Select a course and click "Run Gradebook".</div></td></tr></tbody>
         </table>
       </div>
+    </div>
+
+    <div id="tab-exams" class="hidden">
+
+    
+    <div class="toolbar">
+      <div class="gap-row">
+        <select id="gi-filter-course"><option value="">All courses</option></select>
+        <label class="check-row"><input type="checkbox" id="gi-all-terms"> Show all terms</label>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn btn-primary-sm" id="gi-add">+ New Internal Exam</button>
+      </div>
+    </div>
+    <div class="table-panel">
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Course</th><th>Date</th><th class="r">Total</th><th>Assigned To</th><th>Gradebook</th><th></th></tr></thead>
+        <tbody id="gi-body"><tr><td colspan="7"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+      </table>
+    </div>
+
     </div>
   </main>
 </div>
 
-<!-- Add/Edit Exam Modal -->
-<div class="modal-backdrop" id="modal-backdrop">
+<!-- Add/Edit item -->
+<div class="modal-backdrop" id="gi-modal">
   <div class="modal">
-    <h2 id="modal-title">New Internal Exam</h2>
-    <form id="item-form">
-      <input type="hidden" id="original-id">
+    <h2 id="gi-modal-title">New</h2>
+    <form id="gi-form">
+      <input type="hidden" id="gi-id">
       <div class="form-grid">
-        <div class="field full">
-          <label>Exam *</label>
-          <select id="f-title" required>
-            <option value="Midterm">Midterm</option>
-            <option value="Sessional">Sessional</option>
-            <option value="Final Internal">Final Internal</option>
-          </select>
+        <div class="field full" id="gi-title-wrap"><label id="gi-title-label">Title *</label><input type="text" id="gi-title"></div>
+        <div class="field full hidden" id="gi-exam-wrap"><label>Exam *</label>
+          <select id="gi-exam-title"></select>
         </div>
-        <div class="field"><label>Course *</label><select id="f-course" required></select></div>
-        <div class="field"><label>Date *</label><input type="date" id="f-due" required></div>
-        <div class="field"><label>Total Marks *</label><input type="number" id="f-total" required min="1"></div>
+        <div class="field"><label>Course *</label><select id="gi-course"></select></div>
+        <div class="field"><label id="gi-date-label">Date *</label><input type="date" id="gi-due"></div>
+        <div class="field"><label id="gi-total-label">Total Marks *</label><input type="number" id="gi-total" min="0" step="any"></div>
+        <div class="field"><label>Gradebook</label>
+          <label class="check-row" style="margin-top:10px;"><input type="checkbox" id="gi-count" checked> Count this in the gradebook</label>
+        </div>
+        <div class="field full hidden" id="gi-desc-wrap"><label>Description</label><textarea id="gi-desc" rows="2"></textarea></div>
+        <div class="field full hidden" id="gi-instr-wrap"><label>Instructions</label><textarea id="gi-instructions" rows="2"></textarea></div>
+        <div class="field full hidden" id="gi-attach-wrap"><label>Attachment link (optional)</label><input type="text" id="gi-attachment" placeholder="Google Drive or any https:// link"></div>
+        <div class="field full hidden" id="gi-sub-wrap"><label class="check-row"><input type="checkbox" id="gi-allow-sub"> Students submit their work online (they paste a Google Drive / any https link before the due date)</label></div>
         <div class="field full">
           <label>Assign To</label>
           <div class="radio-row">
-            <label><input type="radio" name="assign-mode" value="all" checked> Entire class</label>
-            <label><input type="radio" name="assign-mode" value="selected"> Selected students</label>
+            <label><input type="radio" name="gi-mode" value="all" checked> Entire class</label>
+            <label><input type="radio" name="gi-mode" value="selected"> Selected students</label>
           </div>
-          <div class="assignee-picker" id="assignee-picker" style="display:none;"></div>
+          <div class="assignee-picker hidden" id="gi-picker"></div>
         </div>
       </div>
-      <div class="form-msg" id="form-msg"></div>
+      <div class="form-msg" id="gi-form-msg"></div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-outline" id="btn-cancel">Cancel</button>
-        <button type="submit" class="btn btn-primary-sm" id="btn-save">Save</button>
+        <button type="button" class="btn btn-outline" id="gi-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary-sm" id="gi-save">Save</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Marks Grid Modal -->
-<div class="modal-backdrop" id="marks-backdrop">
-  <div class="modal" style="max-width:640px;">
-    <h2 id="marks-title">Enter Marks</h2>
-    <div style="display:flex; gap:10px; margin-bottom:14px;">
-      <button type="button" class="btn btn-outline" id="btn-marks-template" style="font-size:12px;">Download Template</button>
-      <button type="button" class="btn btn-outline" id="btn-marks-import" style="font-size:12px;">Upload Filled Marks</button>
-      <input type="file" id="marks-import-file" accept=".xlsx,.xls" style="display:none;">
+<!-- Marks grid -->
+<div class="modal-backdrop" id="gi-marks-modal">
+  <div class="modal wide">
+    <h2 id="gi-marks-title">Enter Marks</h2>
+    <div class="gap-row" style="margin-bottom:12px;">
+      <button type="button" class="btn btn-outline" id="gi-template" style="font-size:12px;">Download Template</button>
+      <button type="button" class="btn btn-outline" id="gi-import" style="font-size:12px;">Upload Filled Marks</button>
+      <input type="file" id="gi-import-file" accept=".xlsx,.xls" class="hidden">
+      <span class="muted small">Fill all blanks with</span>
+      <input type="number" id="gi-fill-value" class="marks-input" step="any">
+      <button type="button" class="btn btn-outline" id="gi-fill" style="font-size:12px;">Fill</button>
     </div>
-    <div class="table-panel" style="box-shadow:none;border:1px solid var(--hairline);margin-bottom:14px;">
-      <table class="data-table">
-        <thead><tr><th>Roll No.</th><th>Name</th><th>Marks</th><th>Remarks</th></tr></thead>
-        <tbody id="marks-body"></tbody>
+    <div class="kpi-inline" id="gi-marks-stats" style="margin-bottom:10px;"></div>
+    <div class="table-panel" style="box-shadow:none;border:1px solid var(--hairline);margin-bottom:14px;max-height:55vh;overflow:auto;">
+      <table class="data-table compact">
+        <thead id="gi-marks-head"></thead>
+        <tbody id="gi-marks-body"></tbody>
       </table>
     </div>
-    <div class="form-msg" id="marks-msg"></div>
+    <div class="form-msg" id="gi-marks-msg"></div>
     <div class="modal-actions">
-      <button type="button" class="btn btn-outline" id="btn-marks-cancel">Close</button>
-      <button type="button" class="btn btn-primary-sm" id="btn-marks-save">Save Marks</button>
+      <button type="button" class="btn btn-outline" id="gi-marks-close">Close</button>
+      <button type="button" class="btn btn-primary-sm" id="gi-marks-save">Save Marks</button>
     </div>
   </div>
 </div>
@@ -176,7 +180,9 @@
 <script src="js/firebase-keys.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/gradebook-common.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/grade-items.js"></script>
 <script src="js/marks.js"></script>
 <script src="js/mobile-nav.js"></script>
 </body>

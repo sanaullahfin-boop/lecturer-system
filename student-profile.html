@@ -6,61 +6,40 @@
 <title>Student Profile · Sanaullah's Classroom</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/style.css">
 <style>
-  .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
-  .profile-avatar {
-    width: 56px; height: 56px; border-radius: 50%; background: var(--gradient-gold);
-    color: var(--ink); display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-family: var(--font-display); font-size: 22px; flex-shrink: 0;
-  }
-  .profile-name { font-size: 22px; margin-bottom: 2px; }
-  .profile-meta { color: var(--slate); font-size: 13px; }
-  .section-title { font-size: 15px; margin: 26px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); }
-  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 10px; }
-  .info-item { background: var(--paper); border-radius: 8px; padding: 12px 14px; box-shadow: var(--shadow-card); }
-  .info-item .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate); margin-bottom: 4px; }
-  .info-item .value { font-size: 14.5px; font-weight: 500; }
-  .back-link { color: var(--slate); font-size: 13px; text-decoration: underline; cursor: pointer; }
+.profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+.profile-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--gradient-gold); color: var(--ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-display); font-size: 22px; flex-shrink: 0; }
+.profile-name { font-size: 22px; margin-bottom: 2px; font-family: var(--font-display); color: var(--ink); }
+.profile-meta { color: var(--slate); font-size: 13px; }
+.section-title { font-size: 15px; margin: 26px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 10px; }
+.info-item { background: var(--paper); border-radius: 8px; padding: 12px 14px; box-shadow: var(--shadow-card); }
+.info-item .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate); margin-bottom: 4px; }
+.info-item .value { font-size: 14.5px; font-weight: 500; word-break: break-word; }
 </style>
 </head>
 <body>
 
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div></div>
-    <div class="nav-group-label">Overview</div>
-    <a class="nav-link" href="admin-dashboard.html">Dashboard</a>
-    <div class="nav-group-label">Academics</div>
-    <a class="nav-link active" href="students.html">Students</a>
-    <a class="nav-link" href="courses.html">Courses</a>
-    <a class="nav-link" href="attendance.html">Attendance</a>
-    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
-    <a class="nav-link" href="assignments.html">Assignments</a>
-    <a class="nav-link" href="presentations.html">Presentations</a>
-    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
-    <div class="nav-group-label">Communication</div>
-    <a class="nav-link" href="announcements.html">Announcements</a>
-    <a class="nav-link" href="course-content.html">Course Content</a>
-    <div class="nav-group-label">System</div>
-    <a class="nav-link" href="reports.html">Reports</a>
-    <a class="nav-link" href="backup.html">Backup</a>
-  </aside>
+  <aside class="sidebar" data-role="admin" data-active="students"></aside>
 
   <main class="main">
     <div class="topbar">
-      <div><h1>Student Profile</h1><span class="back-link" onclick="window.location.href='students.html'">&larr; Back to Students</span></div>
+      <div><h1>Student Profile</h1><div class="today" id="page-sub"><a class="link-btn" href="students.html">&larr; Back to Students</a></div></div>
       <div class="user-chip">
         <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
         <div class="avatar" id="admin-initial">·</div>
       </div>
     </div>
 
-    <div id="content">
-      <div class="empty-state"><span class="loading-dot"></span> Loading student profile…</div>
-    </div>
+    <div id="content"><div class="empty-state"><span class="loading-dot"></span> Loading student profile…</div></div>
   </main>
 </div>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -68,7 +47,8 @@
 <script src="js/firebase-keys.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/gradebook-common.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
 <script src="js/student-profile.js"></script>
 <script src="js/mobile-nav.js"></script>
 </body>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" data-role="admin" data-active="settings"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Settings</h1><div class="today" id="page-sub">Your rules — the whole app (gradebook, reports, warnings, student views) follows them</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="panel settings-section" id="general">
+      <h3>General</h3>
+      <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+        <div class="field"><label>Your name (on reports)</label><input type="text" id="s-teacher"></div>
+        <div class="field"><label>Department</label><input type="text" id="s-department" placeholder="e.g. Department of Business Administration"></div>
+        <div class="field"><label>Institution</label><input type="text" id="s-institution" placeholder="e.g. Kohat University of Science &amp; Technology"></div>
+        <div class="field"><label>Active term</label><input type="text" id="s-term" list="s-term-list" placeholder="e.g. Fall 2026"><datalist id="s-term-list"></datalist></div>
+      </div>
+      <p class="help">Active term: dashboards, attendance and course pickers show only courses of this term (courses with no term are always shown). Leave blank to show everything.</p>
+    </div>
+
+    <div class="panel settings-section" id="attendance">
+      <h3>Attendance Options</h3>
+      <p class="help">These are the buttons you see when marking attendance. <b>Untick</b> an option to hide it (records already marked with it are kept and still counted). <b>Add</b> your own (e.g. "Medical", "Official Duty"). <b>Counts as</b> decides how it affects attendance %: "Not counted" removes that class from the total, "Half" counts half a class. <b>Code</b> is what you type in the monthly Excel sheet. The <b>Default</b> option is pre-selected for every student when you open a class.</p>
+      <div class="table-panel table-scroll" style="margin-bottom:10px;">
+        <table class="data-table compact status-table">
+          <thead><tr><th>On</th><th>Name</th><th>Code</th><th>Counts as</th><th>Colour</th><th class="c">Default</th><th>Order</th><th></th></tr></thead>
+          <tbody id="status-body"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-outline" id="btn-add-status">+ Add an attendance option</button>
+      <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top:16px;">
+        <div class="field"><label>Warning below (%)</label><input type="number" id="s-threshold" min="0" max="100"></div>
+        <div class="field"><label>Attendance marks in gradebook</label>
+          <select id="s-att-scoring"><option value="proportional">Proportional (attendance % = score %)</option><option value="bands">Bands (fixed score per range)</option></select></div>
+      </div>
+      <div id="bands-wrap" class="hidden">
+        <p class="help">Bands: if attendance is at least <i>Min %</i>, the attendance component scores <i>Score %</i> of its weight. Highest matching band wins.</p>
+        <table class="data-table compact scale-table" style="max-width:420px;"><thead><tr><th>Min attendance %</th><th>Score %</th><th></th></tr></thead><tbody id="bands-body"></tbody></table>
+        <button class="btn btn-outline" id="btn-add-band" style="margin-top:8px;">+ Add band</button>
+      </div>
+    </div>
+
+    <div class="panel settings-section" id="grading">
+      <h3>Gradebook Rules</h3>
+      <p class="help">Default weightage for new courses (each course can override it on the Gradebook tab). Set any weight to 0 to not charge that component at all.</p>
+      <div class="weights-form" id="default-weights"></div>
+      <div class="gap-row" style="margin-bottom:16px;"><span class="muted small">Total: <b id="dw-sum">100</b></span>
+        <button class="btn btn-outline" id="btn-apply-weights-all">Apply these weights to ALL courses</button></div>
+
+      <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+        <div class="field"><label>Components with no marks yet</label>
+          <select id="s-missing"><option value="rescale">Leave out &amp; rescale (fair during the semester)</option><option value="zero">Count as zero (strict, for final results)</option></select></div>
+        <div class="field"><label>Blank mark for a student</label>
+          <select id="s-blank"><option value="ignore">Ignore (means not graded yet)</option><option value="zero">Zero once the due date has passed</option></select></div>
+        <div class="field"><label>Combine several quizzes/assignments by</label>
+          <select id="s-aggregation"><option value="average">Average of percentages (each item equal)</option><option value="sum">Total marks (bigger items count more)</option></select></div>
+        <div class="field"><label>Pass mark (%)</label><input type="number" id="s-pass" min="0" max="100"></div>
+        <div class="field"><label>Decimal places</label><select id="s-decimals"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+        <div class="field"><label>Students can see their running total &amp; grade</label>
+          <select id="s-show-standing"><option value="false">No — only individual marks</option><option value="true">Yes — show standing on their Marks page</option></select></div>
+      </div>
+      <h3 style="margin-top:8px;">Drop Lowest</h3>
+      <p class="help">e.g. drop the lowest 1 quiz for each student (only when they have more than that many).</p>
+      <div class="weights-form" id="drop-lowest"></div>
+
+      <h3 style="margin-top:8px;">Grading Scale</h3>
+      <p class="help">Minimum percentage for each letter grade and its grade points (used for GPA on transcripts).</p>
+      <table class="data-table compact scale-table" style="max-width:480px;"><thead><tr><th>Min %</th><th>Grade</th><th>Grade Points</th><th></th></tr></thead><tbody id="scale-body"></tbody></table>
+      <button class="btn btn-outline" id="btn-add-grade" style="margin-top:8px;">+ Add grade</button>
+    </div>
+
+    <div class="panel settings-section" id="whatsapp">
+      <h3>WhatsApp Messages</h3>
+      <p class="help">WhatsApp buttons open a ready-to-send message (free — nothing is sent automatically). Placeholders: {name} {roll} {course} {pct} {threshold} {total} {grade} {teacher}</p>
+      <div class="form-grid">
+        <div class="field"><label>Country code</label><input type="text" id="s-cc"></div>
+        <div class="field"></div>
+        <div class="field full"><label>Attendance warning message</label><textarea id="s-wa-att" rows="3"></textarea></div>
+        <div class="field full"><label>Result / standing message</label><textarea id="s-wa-result" rows="3"></textarea></div>
+      </div>
+    </div>
+
+    <div class="panel settings-section" id="lists">
+      <h3>Your Lists</h3>
+      <p class="help">Choices offered in drop-downs around the app — one per line. Changing a list never changes records you already saved.</p>
+      <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+        <div class="field"><label>Internal exam names</label><textarea id="l-exams" rows="6"></textarea></div>
+        <div class="field"><label>Course file categories</label><textarea id="l-cats" rows="6"></textarea></div>
+        <div class="field"><label>Presentation statuses</label><textarea id="l-pres" rows="6"></textarea></div>
+      </div>
+    </div>
+
+    <div class="panel settings-section" id="quiz-defaults">
+      <h3>Online Quiz Defaults</h3>
+      <p class="help">Starting values for each new online quiz — every quiz can still be changed on its own Settings tab.</p>
+      <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div class="field"><label>Time limit (minutes)</label><input type="number" id="qz-duration" min="1" max="600"></div>
+        <div class="field"><label>Negative marking (fraction per wrong answer)</label><input type="number" id="qz-negative" min="0" max="1" step="0.05"></div>
+        <div class="field"><label>Shuffle questions</label><select id="qz-shuffle-q"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="field"><label>Shuffle options</label><select id="qz-shuffle-o"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="field"><label>Show correct answers with results</label><select id="qz-show"><option value="true">Yes</option><option value="false">No — score only</option></select></div>
+      </div>
+    </div>
+
+    <div class="panel settings-section" id="plan-defaults">
+      <h3>Course Plan Defaults</h3>
+      <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+        <div class="field"><label>Weeks</label><input type="number" id="s-weeks" min="1" max="30"></div>
+        <div class="field"><label>Mid-term week</label><input type="number" id="s-mid" min="0" max="30"></div>
+        <div class="field"><label>Final week</label><input type="number" id="s-final" min="0" max="30"></div>
+      </div>
+      <div class="field"><label>Usual class days</label><div class="chip-row" id="s-days"></div></div>
+    </div>
+
+    <div class="save-bar">
+      <button class="btn btn-primary-sm" id="btn-save-settings">Save Settings</button>
+      <button class="btn btn-outline" id="btn-reset-defaults">Restore Defaults</button>
+      <span class="form-msg" id="settings-msg" style="margin:0;"></span>
+    </div>
+
+    <div class="panel settings-section" id="maintenance" style="margin-top:22px;border-top:3px solid var(--brass);">
+      <h3>Maintenance</h3>
+      <div id="migration-box"><div class="empty-state"><span class="loading-dot"></span></div></div>
+    </div>
+  </main>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

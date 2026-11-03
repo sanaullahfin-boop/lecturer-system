@@ -6,77 +6,52 @@
 <title>My Dashboard · Sanaullah's Classroom</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="seal">SC</div>
-      <div class="brand-name">Sanaullah's Classroom<small>Student Portal</small></div>
-    </div>
-
-    <div class="nav-group-label">My Records</div>
-    <a class="nav-link active" href="student-dashboard.html">Dashboard</a>
-    <a class="nav-link" href="student-attendance.html">Attendance</a>
-    <a class="nav-link" href="student-marks.html">Marks</a>
-    <a class="nav-link" href="student-assignments.html">Assignments</a>
-    <a class="nav-link" href="student-presentations.html">Presentations</a>
-    <a class="nav-link" href="student-course-content.html">Course Content</a>
-    <a class="nav-link" href="student-announcements.html">Announcements</a>
-  </aside>
+  <aside class="sidebar" data-role="student" data-active="dashboard"></aside>
 
   <main class="main">
     <div class="topbar">
-      <div>
-        <h1>My Dashboard</h1>
-        <div class="today" id="today-label"></div>
-      </div>
+      <div><h1>My Dashboard</h1><div class="today" id="page-sub"></div></div>
       <div class="user-chip">
-        <div>
-          <div id="student-name">Loading…</div>
-          <span class="logout-link" id="logout-btn">Sign out</span>
-        </div>
+        <div><div id="student-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
         <div class="avatar" id="student-initial">·</div>
       </div>
     </div>
 
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">Roll Number</div>
-        <div class="stat-value mono" id="stat-roll" style="font-size:20px;">—</div>
+    <div id="quiz-banner"></div>
+    <div class="panel" id="checkin-panel" style="margin-bottom:20px;">
+      <h3>Class Check-in</h3>
+      <div class="filter-row" style="margin-bottom:0;">
+        <div class="field grow"><label>Course</label><select id="ci-course-sel"></select></div>
+        <div class="field"><label>Code on the board</label><input type="text" id="ci-code-in" inputmode="numeric" maxlength="6" placeholder="6 digits" style="font-family:var(--font-mono);font-size:18px;letter-spacing:3px;"></div>
+        <div class="field"><button class="btn btn-primary-sm" id="ci-submit">Check in</button></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">My Attendance</div>
-        <div class="stat-value ok" id="stat-attendance">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Program / Semester</div>
-        <div class="stat-value" style="font-size:16px;" id="stat-program">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Section</div>
-        <div class="stat-value" id="stat-section">—</div>
-      </div>
+      <div class="form-msg" id="ci-result"></div>
     </div>
-
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Roll Number</div><div class="stat-value mono" id="stat-roll" style="font-size:20px;">—</div></div>
+      <div class="stat-card"><div class="stat-label">Overall Attendance</div><div class="stat-value" id="stat-attendance">—</div></div>
+      <div class="stat-card"><div class="stat-label">Program / Semester</div><div class="stat-value" style="font-size:16px;" id="stat-program">—</div></div>
+      <div class="stat-card"><div class="stat-label">Section</div><div class="stat-value" id="stat-section">—</div></div>
+    </div>
+    <div class="panel" style="margin-bottom:20px;">
+      <h3>My Courses — Progress &amp; Attendance</h3>
+      <div id="courses-list" class="progress-list"><div class="empty-state"><span class="loading-dot"></span></div></div>
+    </div>
     <div class="panel-grid">
-      <div class="panel">
-        <h3>Recent Announcements</h3>
-        <div id="announcements-list">
-          <div class="empty-state">Nothing posted yet.</div>
-        </div>
-      </div>
-      <div class="panel">
-        <h3>My Upcoming Deadlines</h3>
-        <div id="tasks-list">
-          <div class="empty-state">No assignments or presentations assigned yet.</div>
-        </div>
-      </div>
+      <div class="panel"><h3>Recent Announcements</h3><div id="announcements-list"><div class="empty-state">Nothing posted yet.</div></div></div>
+      <div class="panel"><h3>My Upcoming Deadlines</h3><div id="tasks-list"><div class="empty-state">Nothing due right now.</div></div></div>
     </div>
   </main>
 </div>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -84,6 +59,8 @@
 <script src="js/firebase-keys.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
 <script src="js/student-dashboard.js"></script>
 <script src="js/mobile-nav.js"></script>
 </body>

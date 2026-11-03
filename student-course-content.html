@@ -6,31 +6,19 @@
 <title>Course Content · Sanaullah's Classroom</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/style.css">
-<style>
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--hairline); }
-  .tab-btn { padding: 10px 4px; margin-right: 22px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--slate); border-bottom: 2px solid transparent; }
-  .tab-btn.active { color: var(--ink); border-color: var(--brass); }
-</style>
 </head>
 <body>
 
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand"><div class="seal">SC</div><div class="brand-name">Sanaullah's Classroom<small>Student Portal</small></div></div>
-    <div class="nav-group-label">My Records</div>
-    <a class="nav-link" href="student-dashboard.html">Dashboard</a>
-    <a class="nav-link" href="student-attendance.html">Attendance</a>
-    <a class="nav-link" href="student-marks.html">Marks</a>
-    <a class="nav-link" href="student-assignments.html">Assignments</a>
-    <a class="nav-link" href="student-presentations.html">Presentations</a>
-    <a class="nav-link active" href="student-course-content.html">Course Content</a>
-    <a class="nav-link" href="student-announcements.html">Announcements</a>
-  </aside>
+  <aside class="sidebar" data-role="student" data-active="content"></aside>
 
   <main class="main">
     <div class="topbar">
-      <div><h1>Course Content</h1><div class="today" id="item-count">—</div></div>
+      <div><h1>Course Content</h1><div class="today" id="item-count"></div></div>
       <div class="user-chip">
         <div><div id="student-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
         <div class="avatar" id="student-initial">·</div>
@@ -38,25 +26,30 @@
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" id="tab-files">My Course Files</button>
-      <button class="tab-btn" id="tab-ebooks">Ebook Library</button>
+      <button class="tab-btn active" data-tab="files">My Course Files</button>
+      <button class="tab-btn" data-tab="ebooks">Ebook Library</button>
     </div>
-
-    <div id="panel-files" class="table-panel">
-      <table class="data-table">
-        <thead><tr><th>File</th><th>Course</th><th>Category</th><th>Uploaded</th></tr></thead>
-        <tbody id="files-body"><tr><td colspan="4"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
-      </table>
+    <div id="tab-files">
+      <div class="toolbar"><input type="text" class="search-input" id="file-search" placeholder="Search files…"></div>
+      <div class="table-panel">
+        <table class="data-table">
+          <thead><tr><th>File</th><th>Course</th><th>Category</th><th>Added</th></tr></thead>
+          <tbody id="files-body"><tr><td colspan="4"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+        </table>
+      </div>
     </div>
-
-    <div id="panel-ebooks" class="table-panel" style="display:none;">
-      <table class="data-table">
-        <thead><tr><th>Title</th><th>Author</th><th>Subject</th></tr></thead>
-        <tbody id="ebooks-body"><tr><td colspan="3"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
-      </table>
+    <div id="tab-ebooks" class="hidden">
+      <div class="toolbar"><input type="text" class="search-input" id="ebook-search" placeholder="Search title, author, subject…"></div>
+      <div class="table-panel">
+        <table class="data-table">
+          <thead><tr><th>Title</th><th>Author</th><th>Subject</th></tr></thead>
+          <tbody id="ebooks-body"><tr><td colspan="3"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -64,75 +57,10 @@
 <script src="js/firebase-keys.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
-<script>
-  document.getElementById('logout-btn').addEventListener('click', logout);
-  function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-  function escapeAttr(str) { return String(str).replace(/'/g, "\\'"); }
-
-  document.getElementById('tab-files').addEventListener('click', () => switchTab('files'));
-  document.getElementById('tab-ebooks').addEventListener('click', () => switchTab('ebooks'));
-  function switchTab(which) {
-    document.getElementById('tab-files').classList.toggle('active', which === 'files');
-    document.getElementById('tab-ebooks').classList.toggle('active', which === 'ebooks');
-    document.getElementById('panel-files').style.display = which === 'files' ? 'block' : 'none';
-    document.getElementById('panel-ebooks').style.display = which === 'ebooks' ? 'block' : 'none';
-  }
-
-  requireStudent(async (user, studentDoc) => {
-    const d = studentDoc.data();
-    document.getElementById('student-name').textContent = d.name || user.email;
-    document.getElementById('student-initial').textContent = (d.name || '?').charAt(0).toUpperCase();
-    const enrolledCourses = d.course || [];
-
-    // My course files
-    const filesBody = document.getElementById('files-body');
-    try {
-      if (enrolledCourses.length === 0) {
-        filesBody.innerHTML = `<tr><td colspan="4"><div class="empty-state">You're not enrolled in any course yet — ask your lecturer to add course codes to your profile.</div></td></tr>`;
-      } else {
-        const snap = await db.collection('courseContent').where('courseCode', 'in', enrolledCourses.slice(0, 10)).get();
-        if (snap.empty) {
-          filesBody.innerHTML = `<tr><td colspan="4"><div class="empty-state">No files uploaded yet for your courses.</div></td></tr>`;
-        } else {
-          const files = snap.docs.map(doc => doc.data()).sort((a, b) => (b.addedAt || '').localeCompare(a.addedAt || ''));
-          filesBody.innerHTML = files.map(f => `
-            <tr>
-              <td><a href="${escapeAttr(f.url)}" target="_blank" rel="noopener">${escapeHtml(f.fileName)}</a></td>
-              <td class="mono">${escapeHtml(f.courseCode)}</td>
-              <td>${escapeHtml(f.category)}</td>
-              <td class="mono">${new Date(f.addedAt).toLocaleDateString()}</td>
-            </tr>
-          `).join('');
-        }
-        document.getElementById('item-count').textContent = `${snap.size} file${snap.size === 1 ? '' : 's'}`;
-      }
-    } catch (e) {
-      filesBody.innerHTML = `<tr><td colspan="4"><div class="empty-state">Could not load: ${escapeHtml(e.message)}</div></td></tr>`;
-    }
-
-    // Ebook library (visible to everyone, not course-scoped)
-    const ebooksBody = document.getElementById('ebooks-body');
-    try {
-      const snap = await db.collection('ebooks').get();
-      if (snap.empty) {
-        ebooksBody.innerHTML = `<tr><td colspan="3"><div class="empty-state">No ebooks added yet.</div></td></tr>`;
-      } else {
-        const ebooks = snap.docs.map(doc => doc.data()).sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
-        ebooksBody.innerHTML = ebooks.map(e => `
-          <tr>
-            <td><a href="${escapeAttr(e.url)}" target="_blank" rel="noopener">${escapeHtml(e.title)}</a></td>
-            <td>${escapeHtml(e.author || '—')}</td>
-            <td>${escapeHtml(e.subject)}</td>
-          </tr>
-        `).join('');
-      }
-    } catch (e) {
-      ebooksBody.innerHTML = `<tr><td colspan="3"><div class="empty-state">Could not load: ${escapeHtml(e.message)}</div></td></tr>`;
-    }
-  });
-</script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/files.js"></script>
+<script src="js/student-course-content.js"></script>
 <script src="js/mobile-nav.js"></script>
 </body>
 </html>

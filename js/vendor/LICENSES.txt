@@ -1,0 +1,3 @@
+Third-party libraries bundled here (all free / open source):
+- pdf.js 6.2.108 (Mozilla) — Apache License 2.0 — pdf.min.js, pdf.worker.min.js (renamed from .mjs so every web host serves them as JavaScript)
+- JSZip 3.10.1 — MIT (or GPLv3) — jszip.min.js

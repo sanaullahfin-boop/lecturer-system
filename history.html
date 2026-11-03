@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Change History · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" data-role="admin" data-active="history"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Change History</h1><div class="today" id="page-sub">Who changed what, and when — marks, attendance, settings, students</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="field grow"><label>Search</label><input type="search" id="hs-search" placeholder="Roll number, course, action…"></div>
+      <div class="field"><label>Type</label><select id="hs-type"><option value="">Everything</option></select></div>
+      <div class="field"><label>Show</label><select id="hs-limit"><option value="100">Last 100</option><option value="300" selected>Last 300</option><option value="1000">Last 1000</option></select></div>
+      <div class="field"><button class="btn btn-outline" id="hs-export">Export Excel</button></div>
+    </div>
+    <p class="help">Every change you make is recorded here automatically, so you can check what a mark or attendance was before it was changed. Entries cannot be edited. Each entry is a tiny record; you can clear old entries to save space.</p>
+    <div class="table-panel">
+      <table class="data-table compact">
+        <thead><tr><th>When</th><th>What</th><th>Details</th><th>Page</th></tr></thead>
+        <tbody id="hs-body"><tr><td colspan="4"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+      </table>
+    </div>
+    <div class="gap-row" style="margin-top:14px;justify-content:flex-end;">
+      <button class="btn btn-outline" id="hs-clear" style="border-color:var(--danger);color:var(--danger);">Delete entries older than 1 year</button>
+    </div>
+  </main>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/history.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>

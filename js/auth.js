@@ -75,12 +75,24 @@ function requireAdmin(onReady) {
       window.location.href = "index.html";
       return;
     }
-    const adminDoc = await db.collection("admins").doc(user.uid).get();
-    if (!adminDoc.exists) {
+    let adminDoc;
+    try {
+      adminDoc = await db.collection("admins").doc(user.uid).get();
+    } catch (e) {
+      // Offline and not cached yet — try the local cache before giving up.
+      try { adminDoc = await db.collection("admins").doc(user.uid).get({ source: "cache" }); }
+      catch (e2) { adminDoc = null; }
+    }
+    if (!adminDoc || !adminDoc.exists) {
       window.location.href = "index.html";
       return;
     }
-    onReady(user, adminDoc.data());
+    try {
+      await onReady(user, adminDoc.data());
+    } catch (e) {
+      console.error(e);
+      if (typeof toast === "function") toast("Something went wrong loading this page: " + e.message, "error");
+    }
   });
 }
 
@@ -104,7 +116,7 @@ function requireStudent(onReady) {
       try {
         const doc = await db.collection("students").doc(cachedRoll).get();
         if (doc.exists && doc.data().authUid === user.uid) {
-          onReady(user, doc);
+          runStudentReady(onReady, user, doc);
           return;
         }
       } catch (e) {
@@ -122,9 +134,18 @@ function requireStudent(onReady) {
         return;
       }
       localStorage.setItem(STUDENT_ROLL_CACHE_KEY, studentQuery.docs[0].id);
-      onReady(user, studentQuery.docs[0]);
+      runStudentReady(onReady, user, studentQuery.docs[0]);
     } catch (e) {
       window.location.href = "index.html";
     }
   });
+}
+
+async function runStudentReady(onReady, user, doc) {
+  try {
+    await onReady(user, doc);
+  } catch (e) {
+    console.error(e);
+    if (typeof toast === "function") toast("Something went wrong loading this page: " + e.message, "error");
+  }
 }

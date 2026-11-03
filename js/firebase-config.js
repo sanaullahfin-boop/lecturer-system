@@ -6,6 +6,15 @@
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Offline support: keeps a local copy of data you've already opened, and
+// queues any changes you make while offline (e.g. marking attendance in a
+// classroom with no signal) — they sync automatically when you reconnect.
+// Must run before any other Firestore call. Silently skipped where the
+// browser doesn't allow it (e.g. some private/incognito windows).
+try {
+  db.enablePersistence({ synchronizeTabs: true }).catch(function () {});
+} catch (e) { /* ignore */ }
+
 // Domain used for student login emails. Students never see this — they
 // only ever type their roll number.
 const STUDENT_EMAIL_DOMAIN = "students.sanaullah-classroom.local";

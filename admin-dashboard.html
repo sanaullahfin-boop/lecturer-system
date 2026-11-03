@@ -6,92 +6,71 @@
 <title>Dashboard · Sanaullah's Classroom</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="seal">SC</div>
-      <div class="brand-name">Sanaullah's Classroom<small>Admin Console</small></div>
-    </div>
-
-    <div class="nav-group-label">Overview</div>
-    <a class="nav-link active" href="admin-dashboard.html">Dashboard</a>
-
-    <div class="nav-group-label">Academics</div>
-    <a class="nav-link" href="students.html">Students</a>
-    <a class="nav-link" href="courses.html">Courses</a>
-    <a class="nav-link" href="attendance.html">Attendance</a>
-    <a class="nav-link" href="marks.html">Marks &amp; Gradebook</a>
-    <a class="nav-link" href="assignments.html">Assignments</a>
-    <a class="nav-link" href="presentations.html">Presentations</a>
-    <a class="nav-link" href="quizzes-tasks.html">Quizzes &amp; Tasks</a>
-
-    <div class="nav-group-label">Communication</div>
-    <a class="nav-link" href="announcements.html">Announcements</a>
-    <a class="nav-link" href="course-content.html">Course Content</a>
-
-    <div class="nav-group-label">System</div>
-    <a class="nav-link" href="reports.html">Reports</a>
-    <a class="nav-link" href="backup.html">Backup</a>
-  </aside>
+  <aside class="sidebar" data-role="admin" data-active="dashboard"></aside>
 
   <main class="main">
     <div class="topbar">
-      <div>
-        <h1>Dashboard</h1>
-        <div class="today" id="today-label"></div>
-      </div>
+      <div><h1>Dashboard</h1><div class="today" id="page-sub"></div></div>
       <div class="user-chip">
-        <div>
-          <div id="admin-name">Loading…</div>
-          <span class="logout-link" id="logout-btn">Sign out</span>
-        </div>
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
         <div class="avatar" id="admin-initial">·</div>
       </div>
     </div>
 
-    <div class="stat-grid" id="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total Students</div>
-        <div class="stat-value" id="stat-total-students"><span class="loading-dot"></span></div>
+    <div id="banners"></div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Active Students</div><div class="stat-value" id="stat-students"><span class="loading-dot"></span></div></div>
+      <div class="stat-card"><div class="stat-label">Courses This Term</div><div class="stat-value" id="stat-courses">—</div></div>
+      <div class="stat-card"><div class="stat-label">Present Today</div><div class="stat-value ok" id="stat-present">—</div></div>
+      <div class="stat-card"><div class="stat-label">Absent Today</div><div class="stat-value danger" id="stat-absent">—</div></div>
+      <div class="stat-card"><div class="stat-label">Attendance Warnings</div><div class="stat-value warn" id="stat-warnings">—</div></div>
+      <div class="stat-card"><div class="stat-label">Avg. Course Covered</div><div class="stat-value" id="stat-coverage">—</div></div>
+    </div>
+
+    <div class="panel-grid" style="margin-bottom:20px;">
+      <div class="panel">
+        <h3>Course Progress</h3>
+        <div id="progress-list" class="progress-list"><div class="empty-state"><span class="loading-dot"></span></div></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Present Today</div>
-        <div class="stat-value ok" id="stat-present-today">—</div>
+      <div class="panel">
+        <h3>Today</h3>
+        <div id="today-list"><div class="empty-state"><span class="loading-dot"></span></div></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Absent Today</div>
-        <div class="stat-value danger" id="stat-absent-today">—</div>
+    </div>
+
+    <div class="panel-grid" style="margin-bottom:20px;">
+      <div class="panel">
+        <h3>Attendance Trend <span class="muted small" style="font-family:var(--font-body);font-weight:400;">— last 30 class days, all courses</span></h3>
+        <div id="trend-chart"><div class="empty-state">No attendance yet.</div></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Attendance Warnings</div>
-        <div class="stat-value warn" id="stat-warnings">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Active Courses</div>
-        <div class="stat-value" id="stat-courses">—</div>
+      <div class="panel">
+        <h3>Upcoming Deadlines</h3>
+        <div id="deadlines-list"><div class="empty-state">Nothing scheduled.</div></div>
       </div>
     </div>
 
     <div class="panel-grid">
       <div class="panel">
-        <h3>Recent Announcements</h3>
-        <div id="announcements-list">
-          <div class="empty-state">No announcements yet. This panel will populate once the Announcements module is built in a later phase.</div>
-        </div>
+        <h3>Students Below Attendance Threshold</h3>
+        <div id="risk-list"><div class="empty-state">No warnings.</div></div>
       </div>
       <div class="panel">
-        <h3>Upcoming Tasks &amp; Deadlines</h3>
-        <div id="tasks-list">
-          <div class="empty-state">No assignments or presentations yet. This panel will populate once those modules are built.</div>
-        </div>
+        <h3>Recent Announcements</h3>
+        <div id="announcements-list"><div class="empty-state">No announcements yet.</div></div>
       </div>
     </div>
   </main>
 </div>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -99,6 +78,8 @@
 <script src="js/firebase-keys.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
 <script src="js/admin-dashboard.js"></script>
 <script src="js/mobile-nav.js"></script>
 </body>

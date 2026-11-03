@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Quizzes · Sanaullah's Classroom</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D1B2E">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" data-role="admin" data-active="onlinequiz"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Online Quizzes</h1><div class="today" id="page-sub">Build, run and auto-mark quizzes your students take on their phones</div></div>
+      <div class="user-chip">
+        <div><div id="admin-name">Loading…</div><span class="logout-link" id="logout-btn">Sign out</span></div>
+        <div class="avatar" id="admin-initial">·</div>
+      </div>
+    </div>
+
+    <!-- LIST -->
+    <div id="list-view" class="hidden">
+      <div class="toolbar">
+        <div class="gap-row"><select id="ql-course"><option value="">All courses</option></select>
+          <label class="check-row"><input type="checkbox" id="ql-all-terms"> Show all terms</label></div>
+        <div class="toolbar-actions"><button class="btn btn-primary-sm" id="btn-new-quiz">+ New Online Quiz</button></div>
+      </div>
+      <p class="help">Every quiz from <a href="quizzes-tasks.html">Quizzes &amp; Tasks</a> is listed here — click <b>Build</b> to turn any of them into an online quiz, or create a new one.</p>
+      <div class="table-panel">
+        <table class="data-table">
+          <thead><tr><th>Quiz</th><th>Course</th><th>Date</th><th class="c">Questions</th><th class="r">Marks</th><th>Online</th><th></th></tr></thead>
+          <tbody id="ql-body"><tr><td colspan="7"><div class="empty-state"><span class="loading-dot"></span> Loading…</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ONE QUIZ -->
+    <div id="quiz-view" class="hidden">
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="gap-row" style="justify-content:space-between;">
+          <div>
+            <a class="link-btn small" href="quiz-builder.html">&larr; All online quizzes</a>
+            <h2 style="font-size:19px;margin-top:6px;" id="qz-title"></h2>
+            <div class="muted small" id="qz-sub"></div>
+          </div>
+          <div class="gap-row">
+            <span class="badge" id="qz-status"></span>
+            <button class="btn btn-outline" id="btn-qz-draft">Back to Draft</button>
+            <button class="btn btn-primary-sm" id="btn-qz-open">Open Quiz Now</button>
+            <button class="btn btn-outline" id="btn-qz-close" style="border-color:var(--danger);color:var(--danger);">Close Quiz</button>
+          </div>
+        </div>
+        <div class="form-msg" id="qz-msg"></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="questions">Questions</button>
+        <button class="tab-btn" data-tab="qsettings">Quiz Settings</button>
+        <button class="tab-btn" data-tab="results">Results &amp; Marking</button>
+      </div>
+
+      <div id="tab-questions">
+        <div id="q-warning"></div>
+        <div class="toolbar">
+          <div class="kpi-inline"><span>Questions <b id="q-count">0</b></span><span>Total marks <b id="q-total">0</b></span></div>
+          <div class="toolbar-actions">
+            <select id="q-new-type">
+              <option value="mcq">MCQ (one correct)</option><option value="multi">Multiple correct</option><option value="tf">True / False</option><option value="short">Short answer</option>
+            </select>
+            <button class="btn btn-outline" id="btn-q-add">+ Add Question</button>
+            <button class="btn btn-outline" id="btn-q-template">Excel Template</button>
+            <button class="btn btn-outline" id="btn-q-import">Import from Excel</button>
+            <input type="file" id="q-import-file" accept=".xlsx,.xls" class="hidden">
+            <button class="btn btn-outline" id="btn-q-preview">Preview as Student</button>
+          </div>
+        </div>
+        <div id="q-list"></div>
+        <div class="save-bar"><button class="btn btn-primary-sm" id="btn-q-save">Save Questions</button><span class="form-msg" id="q-save-msg" style="margin:0;"></span></div>
+      </div>
+
+      <div id="tab-qsettings" class="hidden">
+        <div class="panel">
+          <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="field"><label>Time limit (minutes)</label><input type="number" id="qs-duration" min="1" max="600"></div>
+            <div class="field"><label>Opens at (optional)</label><input type="datetime-local" id="qs-opens"></div>
+            <div class="field"><label>Closes at (optional)</label><input type="datetime-local" id="qs-closes"></div>
+            <div class="field"><label>Negative marking per wrong answer</label>
+              <select id="qs-negative"><option value="0">None</option><option value="0.25">1/4 of the question's marks</option><option value="0.33">1/3 of the question's marks</option><option value="0.5">1/2 of the question's marks</option><option value="1">Full marks of the question</option></select></div>
+            <div class="field"><label>Shuffle question order</label><select id="qs-shuffle-q"><option value="true">Yes — each student gets a different order</option><option value="false">No</option></select></div>
+            <div class="field"><label>Shuffle options (A/B/C/D)</label><select id="qs-shuffle-o"><option value="true">Yes</option><option value="false">No</option></select></div>
+            <div class="field"><label>When results are published, students see</label><select id="qs-show"><option value="true">Their score + correct answers</option><option value="false">Their score only</option></select></div>
+          </div>
+          <p class="help">"Open" lets students start. With an opening/closing time set, students can only start inside that window. Every attempt ends automatically when its time limit runs out (a 2-minute grace is allowed for slow internet).</p>
+          <button class="btn btn-primary-sm" id="btn-qs-save">Save Settings</button>
+          <span class="form-msg" id="qs-msg" style="display:inline-block;margin-left:10px;"></span>
+        </div>
+      </div>
+
+      <div id="tab-results" class="hidden">
+        <div class="panel-grid" style="margin-bottom:16px;">
+          <div class="panel"><h3>Summary</h3><div class="kpi-inline" id="r-kpis"></div>
+            <div class="gap-row" style="margin-top:14px;">
+              <button class="btn btn-outline" id="btn-r-refresh">Refresh</button>
+              <label class="check-row"><input type="checkbox" id="r-zero"> Give 0 to students who did not attempt</label>
+            </div>
+            <div class="gap-row" style="margin-top:10px;">
+              <button class="btn btn-primary-sm" id="btn-r-save">Save Marks to Gradebook</button>
+              <button class="btn btn-primary-sm" id="btn-r-publish">Publish Results to Students</button>
+              <button class="btn btn-outline hidden" id="btn-r-unpublish">Hide Results</button>
+              <button class="btn btn-outline" id="btn-r-export">Export Excel</button>
+            </div>
+            <div class="form-msg" id="r-msg"></div>
+          </div>
+          <div class="panel"><h3>Question Analysis <span class="muted small" style="font-family:var(--font-body);font-weight:400;">— % of attempts answering correctly</span></h3><div id="r-analysis"></div></div>
+        </div>
+        <div class="table-panel table-scroll">
+          <table class="data-table compact">
+            <thead><tr><th>Roll No.</th><th>Name</th><th>Status</th><th>Started</th><th>Time taken</th><th class="c" title="Times the student left the quiz screen">Left screen</th><th class="r">Score</th><th class="r">%</th><th></th></tr></thead>
+            <tbody id="r-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="new-quiz-modal">
+  <div class="modal">
+    <h2>New Online Quiz</h2>
+    <div class="form-grid">
+      <div class="field full"><label>Quiz title *</label><input type="text" id="nq-title" placeholder="e.g. Quiz 3 — Ratio Analysis"></div>
+      <div class="field"><label>Course *</label><select id="nq-course"></select></div>
+      <div class="field"><label>Quiz date *</label><input type="date" id="nq-date"></div>
+      <div class="field"><label class="check-row" style="margin-top:8px;"><input type="checkbox" id="nq-count" checked> Count in the gradebook</label></div>
+    </div>
+    <div class="form-msg" id="nq-msg"></div>
+    <div class="modal-actions"><button class="btn btn-outline" id="nq-cancel">Cancel</button><button class="btn btn-primary-sm" id="nq-create">Create &amp; Add Questions</button></div>
+  </div>
+</div>
+<div class="modal-backdrop" id="answers-modal">
+  <div class="modal wide">
+    <h2 id="am-title">Answers</h2>
+    <div id="am-body" style="max-height:65vh;overflow:auto;"></div>
+    <div class="modal-actions"><button class="btn btn-outline" id="am-close">Close</button></div>
+  </div>
+</div>
+<div class="modal-backdrop" id="preview-modal">
+  <div class="modal wide">
+    <h2>Student Preview</h2>
+    <p class="help">This is what a student sees (without the answers). Order follows your shuffle settings for a sample student.</p>
+    <div id="pv-body" style="max-height:65vh;overflow:auto;"></div>
+    <div class="modal-actions"><button class="btn btn-outline" id="pv-close">Close</button></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/firebase-keys.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/core.js"></script>
+<script src="js/grading.js"></script>
+<script src="js/quiz-core.js"></script>
+<script src="js/quiz-builder.js"></script>
+<script src="js/mobile-nav.js"></script>
+</body>
+</html>
